@@ -1,13 +1,9 @@
-# Day 1：可点击章节地图
-
 screen day1_chapter_map():
     modal True
 
     add "images/day1_chapter_map.png":
         xysize (1920, 1080)
 
-    # 与地图中六个章节图标对应的点击区域：
-    # (章节编号, xpos, ypos, width, height)
     $ day1_hotspots = [
         (1, 35, 145, 280, 305),
         (2, 300, 145, 290, 305),
@@ -27,7 +23,6 @@ screen day1_chapter_map():
                 ypos py
                 xsize pw
                 ysize ph
-
                 background Solid("#00000000")
                 hover_background Solid("#d6a74a44")
                 action Return(chapter_id)
@@ -39,7 +34,6 @@ screen day1_chapter_map():
                         size 27
                         color "#b7d6ad"
                         outlines [(2, "#172018", 0, 0)]
-
                 elif chapter_id == day1_current_chapter:
                     text "点击进入":
                         xalign 0.5
@@ -47,7 +41,6 @@ screen day1_chapter_map():
                         size 27
                         color "#f1d590"
                         outlines [(2, "#2a2114", 0, 0)]
-
         else:
             frame:
                 xpos px
@@ -65,26 +58,29 @@ screen day1_chapter_map():
 
     frame:
         xpos 1510
-        ypos 845
+        ypos 835
         xsize 365
-        ysize 155
+        ysize 185
         background Solid("#141611e8")
         padding (24, 18)
 
         vbox:
-            spacing 8
-
-            text "Day 1 功能原型":
+            spacing 7
+            text "章节地图":
                 size 28
                 color "#dfbd72"
-
             text "当前章节：[day1_current_chapter] / 6":
-                size 23
+                size 22
                 color "#eee2c8"
-
             text "已完成：[len(day1_completed_chapters)] / 6":
-                size 23
+                size 22
                 color "#eee2c8"
+            text "信任 [day1_trust]　记录 [day1_records]":
+                size 20
+                color "#cfc2a5"
+            text "士气 [day1_morale]　物资 [day1_supplies]":
+                size 20
+                color "#cfc2a5"
 
     textbutton "返回主菜单":
         xpos 60

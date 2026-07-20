@@ -1,10 +1,13 @@
-# Day 1：章节进度与选择变量
-
 default day1_current_chapter = 1
 default day1_completed_chapters = []
 
 default day1_trust = 0
 default day1_records = 0
+default day1_morale = 0
+default day1_supplies = 0
+
+default ch4_places = []
+default newspaper_choice = ""
 
 
 init python:
