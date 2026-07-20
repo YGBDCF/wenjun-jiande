@@ -1,0 +1,37 @@
+# Ren'Py generated files
+game/cache/
+game/saves/
+game/*.rpyc
+game/**/*.rpyc
+game/*.rpymc
+game/**/*.rpymc
+
+# Ren'Py logs and temporary files
+log.txt
+traceback.txt
+errors.txt
+files.txt
+tmp/
+temp/
+
+# Build outputs
+dist/
+build/
+*-dists/
+*.zip
+
+# Editors and operating systems
+.vscode/
+.idea/
+*.swp
+*.swo
+*.tmp
+*.bak
+*.old
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Python cache
+__pycache__/
+*.py[cod]
