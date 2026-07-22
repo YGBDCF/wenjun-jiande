@@ -6,7 +6,7 @@ label chapter_5:
     pause 0.8
 
     $ immersive_setup("第五章  警报中的课堂", "1937年冬  建德", "安全疏散并让课堂继续", [("组织学生疏散", False), ("带回教学材料", False), ("完成临时课堂", False)], ["优先保护人员", "保持队伍秩序"], ["课程笔记", "粉笔", "油灯"], 4, "tense")
-    call immersive_show
+    call immersive_show from _call_immersive_show_3
     $ ch5_spots = []
     jump ch5_explore_hub
 
@@ -91,6 +91,6 @@ label ch5_story:
     sy "我把最后一句写进笔记。"
 
     $ day1_finish_chapter(5)
-    call immersive_hide
+    call immersive_hide from _call_immersive_hide_3
     centered "{size=44}第五章完成{/size}\n《浙大日报》已解锁"
     jump day1_map_hub

@@ -6,7 +6,7 @@ label chapter_6:
     pause 0.8
 
     $ immersive_setup("第六章  浙江大学日报", "1937年冬  建德", "核实消息并完成今日报纸", [("整理广播信息", True), ("区分事实与传言", False), ("完成排版印刷", False)], ["注明消息来源", "避免放大恐慌"], ["广播记录", "校务布告", "排版稿"], 5, "thoughtful")
-    call immersive_show
+    call immersive_show from _call_immersive_show_4
     $ ch6_spots = []
     jump ch6_explore_hub
 
@@ -105,7 +105,7 @@ label ch6_story:
     narrator_day1 "课堂、书籍、报纸与人的记忆，继续向西。"
 
     $ day1_finish_chapter(6)
-    call immersive_hide
+    call immersive_hide from _call_immersive_hide_4
 
     menu:
         "六章扩写版体验完成。"

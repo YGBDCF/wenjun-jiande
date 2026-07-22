@@ -6,7 +6,7 @@ label chapter_2:
     pause 0.8
 
     $ immersive_setup("第二章  江干码头", "1937年11月  杭州", "在潮水变化前完成首批装船", [("核对人员名单", True), ("固定教材与仪器", False), ("按时离岸", False)], ["照顾师生家属", "避免木箱混装"], ["装船清单", "煤油灯"], 1, "tense")
-    call immersive_show
+    call immersive_show from _call_immersive_show
     $ ch2_spots = []
     jump ch2_explore_hub
 
@@ -74,6 +74,6 @@ label ch2_story:
     sy "它被分装在人群、书箱、笔记和彼此照应的目光里，一点点离开杭州。"
 
     $ day1_finish_chapter(2)
-    call immersive_hide
+    call immersive_hide from _call_immersive_hide
     centered "{size=44}第二章完成{/size}\n护送《四库全书》已解锁"
     jump day1_map_hub

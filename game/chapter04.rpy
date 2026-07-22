@@ -6,7 +6,7 @@ label chapter_4:
     pause 0.8
 
     $ immersive_setup("第四章  建德梅城", "1937年11月  梅城", "在城中重新建立临时校园", [("布置孔庙课堂", False), ("安顿民居宿舍", False), ("建立林场办公点", False), ("整理当铺住宿区", False), ("设置校务办公处", False), ("接收码头物资", False)], ["尊重居民原有生活", "恢复教学秩序"], ["梅城简图", "房屋登记册"], 3, "calm")
-    call immersive_show
+    call immersive_show from _call_immersive_show_2
 
     narrator_day1 "师生抵达梅城后，办公室、教室和宿舍被分散安置在城中各处。"
     yq "你们带来的人比我想象得还多。"
@@ -255,6 +255,6 @@ label chapter_4_finish:
     narrator_day1 "临时校园在整座梅城中展开，而新的警报声也越来越近。"
 
     $ day1_finish_chapter(4)
-    call immersive_hide
+    call immersive_hide from _call_immersive_hide_2
     centered "{size=44}第四章完成{/size}\n“黑板挂在我的胸前”已解锁"
     jump day1_map_hub

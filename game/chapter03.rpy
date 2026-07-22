@@ -6,7 +6,7 @@ label chapter_3:
     pause 0.8
 
     $ immersive_setup("第三章  护送四库全书", "1937年冬  西迁水路", "辨认并保护重要典籍箱", [("核对目录号", True), ("检查馆藏印", False), ("完成防潮加固", False)], ["记录封签变化", "保证交接可追溯"], ["运输清单", "干布", "油布"], 2, "thoughtful")
-    call immersive_show
+    call immersive_show from _call_immersive_show_1
     $ ch3_spots = []
     jump ch3_explore_hub
 
@@ -75,6 +75,6 @@ label chapter_3_correct:
     sy "西迁要保存的不只是课堂，还有比我们更古老的文化记忆。"
 
     $ day1_finish_chapter(3)
-    call immersive_hide
+    call immersive_hide from _call_immersive_hide_1
     centered "{size=44}第三章完成{/size}\n建德梅城已解锁"
     jump day1_map_hub
