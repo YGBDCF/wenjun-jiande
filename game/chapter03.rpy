@@ -2,8 +2,15 @@ label chapter_3:
     scene bg ch3
     with fade
 
-    centered "{size=50}第三章　护送《四库全书》{/size}\n{size=32}守护文化的记忆{/size}"
+    centered "{size=50}第三章  护送《四库全书》{/size}\n{size=32}守护文化的记忆{/size}"
     pause 0.8
+
+    $ immersive_setup("第三章  护送四库全书", "1937年冬  西迁水路", "辨认并保护重要典籍箱", [("核对目录号", True), ("检查馆藏印", False), ("完成防潮加固", False)], ["记录封签变化", "保证交接可追溯"], ["运输清单", "干布", "油布"], 2, "thoughtful")
+    call immersive_show
+    $ ch3_spots = []
+    jump ch3_explore_hub
+
+label ch3_story:
 
     narrator_day1 "水路运输途中，一批重要典籍箱需要重新核对并加强防潮。"
     ls "箱子外形相似，不能只看外面的字。"
@@ -50,6 +57,8 @@ label chapter_3_choice:
             jump chapter_3_choice
 
 label chapter_3_correct:
+    $ immersive_tasks = [("核对目录号", True), ("检查馆藏印", True), ("完成防潮加固", True)]
+    $ immersive_archive_count = 3
     narrator_day1 "我们把乙箱移到船舱中央，垫高底部，又在外层加了一层油布。"
     ct "只是几只箱子，却让这么多人一路守着。"
     ls "因为它们不是普通货物。"
@@ -66,5 +75,6 @@ label chapter_3_correct:
     sy "西迁要保存的不只是课堂，还有比我们更古老的文化记忆。"
 
     $ day1_finish_chapter(3)
+    call immersive_hide
     centered "{size=44}第三章完成{/size}\n建德梅城已解锁"
     jump day1_map_hub

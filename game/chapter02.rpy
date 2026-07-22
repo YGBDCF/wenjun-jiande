@@ -2,8 +2,15 @@ label chapter_2:
     scene bg ch2
     with fade
 
-    centered "{size=50}第二章　江干码头{/size}\n{size=32}把一所大学装上船{/size}"
+    centered "{size=50}第二章  江干码头{/size}\n{size=32}把一所大学装上船{/size}"
     pause 0.8
+
+    $ immersive_setup("第二章  江干码头", "1937年11月  杭州", "在潮水变化前完成首批装船", [("核对人员名单", True), ("固定教材与仪器", False), ("按时离岸", False)], ["照顾师生家属", "避免木箱混装"], ["装船清单", "煤油灯"], 1, "tense")
+    call immersive_show
+    $ ch2_spots = []
+    jump ch2_explore_hub
+
+label ch2_story:
 
     narrator_day1 "1937年11月，师生、家属、图书与仪器陆续集中到江干码头。"
     sy "我从没见过这么多木箱。它们排在江边，像另一支等待出发的队伍。"
@@ -67,5 +74,6 @@ label chapter_2:
     sy "它被分装在人群、书箱、笔记和彼此照应的目光里，一点点离开杭州。"
 
     $ day1_finish_chapter(2)
+    call immersive_hide
     centered "{size=44}第二章完成{/size}\n护送《四库全书》已解锁"
     jump day1_map_hub

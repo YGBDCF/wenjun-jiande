@@ -93,18 +93,28 @@ style frame:
 ## https://doc.renpy.cn/zh-CN/screen_special.html#say
 
 screen say(who, what):
+    zorder 20
 
     window:
         id "window"
+        if renpy.get_screen("ch1_hud") or renpy.get_screen("immersive_hud"):
+            style "ch1_window"
 
         if who is not None:
 
             window:
                 id "namebox"
-                style "namebox"
-                text who id "who"
+                if renpy.get_screen("ch1_hud") or renpy.get_screen("immersive_hud"):
+                    style "ch1_namebox"
+                    text who id "who" style "ch1_say_label"
+                else:
+                    style "namebox"
+                    text who id "who"
 
-        text what id "what"
+        if renpy.get_screen("ch1_hud") or renpy.get_screen("immersive_hud"):
+            text what id "what" style "ch1_say_dialogue"
+        else:
+            text what id "what"
 
 
     ## 如果有对话框头像，会将其显示在文本之上。请不要在手机界面下显示这个，因为
@@ -124,6 +134,35 @@ style say_thought is say_dialogue
 
 style namebox is default
 style namebox_label is say_label
+
+style ch1_window is window:
+    background "images/chapter01/ui/dialogue_panel.png"
+    xpos 360
+    xsize 1130
+    ysize 300
+    yalign 1.0
+
+style ch1_namebox is namebox:
+    xpos 58
+    ypos 12
+    xsize 310
+    ysize 72
+    background None
+    left_padding 28
+    right_padding 28
+
+style ch1_say_label is say_label:
+    color "#65451f"
+    size 28
+    xalign 0.0
+
+style ch1_say_dialogue is say_dialogue:
+    xpos 76
+    ypos 78
+    xsize 970
+    size 26
+    color "#30291f"
+    line_spacing 9
 
 
 style window:
@@ -199,11 +238,48 @@ style input:
 ## https://doc.renpy.cn/zh-CN/screen_special.html#choice
 
 screen choice(items):
-    style_prefix "choice"
+    zorder 25
+    if renpy.get_screen("ch1_hud") or renpy.get_screen("immersive_hud"):
+        if len(items) <= 3:
+            hbox:
+                xpos 366
+                ypos 1008
+                spacing 6
+                for i in items:
+                    textbutton i.caption:
+                        action i.action
+                        xsize 370
+                        ysize 58
+                        background Solid("#00000000")
+                        hover_background Solid("#d2aa5828")
+                        text_size 20
+                        text_color "#40372b"
+                        text_hover_color "#8a6428"
+                        text_xalign 0.5
+                        text_yalign 0.5
+        else:
+            grid 2 2:
+                xpos 510
+                ypos 850
+                spacing 8
+                for i in items:
+                    textbutton i.caption:
+                        action i.action
+                        xsize 480
+                        ysize 68
+                        background Solid("#d8c9a7e8")
+                        hover_background Solid("#d2aa5840")
+                        text_size 20
+                        text_color "#40372b"
+                        text_hover_color "#8a6428"
+                        text_xalign 0.5
+                        text_yalign 0.5
+    else:
+        style_prefix "choice"
 
-    vbox:
-        for i in items:
-            textbutton i.caption action i.action
+        vbox:
+            for i in items:
+                textbutton i.caption action i.action
 
 
 style choice_vbox is vbox
@@ -233,7 +309,7 @@ screen quick_menu():
     ## 确保该菜单出现在其他屏幕之上，
     zorder 100
 
-    if quick_menu:
+    if quick_menu and not renpy.get_screen("ch1_hud") and not renpy.get_screen("immersive_hud"):
 
         hbox:
             style_prefix "quick"

@@ -28,7 +28,7 @@ screen day1_chapter_map():
                 action Return(chapter_id)
 
                 if completed:
-                    text "✓ 已完成":
+                    text "已经完成":
                         xalign 0.5
                         yalign 0.91
                         size 27
@@ -75,11 +75,11 @@ screen day1_chapter_map():
             text "已完成：[len(day1_completed_chapters)] / 6":
                 size 22
                 color "#eee2c8"
-            text "信任 [day1_trust]　记录 [day1_records]":
-                size 20
+            text "完成章节后将依次解锁后续路线":
+                size 18
                 color "#cfc2a5"
-            text "士气 [day1_morale]　物资 [day1_supplies]":
-                size 20
+            text "已经完成的章节可以重新体验":
+                size 18
                 color "#cfc2a5"
 
     textbutton "返回主菜单":

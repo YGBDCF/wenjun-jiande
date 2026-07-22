@@ -2,8 +2,11 @@ label chapter_4:
     scene bg ch4
     with fade
 
-    centered "{size=50}第四章　建德梅城{/size}\n{size=32}四十五天建起一所大学{/size}"
+    centered "{size=50}第四章  建德梅城{/size}\n{size=32}四十五天建起一所大学{/size}"
     pause 0.8
+
+    $ immersive_setup("第四章  建德梅城", "1937年11月  梅城", "在城中重新建立临时校园", [("安排临时课堂", False), ("建立办公地点", False), ("协调师生住宿", False), ("接收图书仪器", False)], ["尊重居民原有生活", "恢复教学秩序"], ["梅城简图", "房屋登记册"], 3, "calm")
+    call immersive_show
 
     narrator_day1 "师生抵达梅城后，办公室、教室和宿舍被分散安置在城中各处。"
     yq "你们带来的人比我想象得还多。"
@@ -24,23 +27,19 @@ label chapter_4:
 
 
 label chapter_4_hub:
+    $ immersive_tasks = [("安排临时课堂", "kongmiao" in ch4_places), ("建立办公地点", "linchang" in ch4_places), ("协调师生住宿", "minju" in ch4_places), ("接收图书仪器", "dock" in ch4_places)]
     if len(ch4_places) >= 4:
         jump chapter_4_finish
 
-    menu:
-        "接下来前往哪里？（已完成 [len(ch4_places)] / 4）"
-
-        "孔庙：安排临时课堂" if "kongmiao" not in ch4_places:
-            jump chapter_4_kongmiao
-
-        "林场：建立办公点" if "linchang" not in ch4_places:
-            jump chapter_4_linchang
-
-        "民居：协调学生住宿" if "minju" not in ch4_places:
-            jump chapter_4_minju
-
-        "梅城码头：接收书籍与仪器" if "dock" not in ch4_places:
-            jump chapter_4_dock
+    call screen historical_location_map("bg ch4", "建德梅城  临时校园", [("kongmiao", "孔庙课堂", 120, 220, 520, 430), ("linchang", "林场办公点", 720, 130, 390, 300), ("minju", "学生民居", 900, 440, 330, 300), ("dock", "梅城码头", 1230, 280, 290, 390)], ch4_places)
+    if _return == "kongmiao":
+        jump chapter_4_kongmiao
+    elif _return == "linchang":
+        jump chapter_4_linchang
+    elif _return == "minju":
+        jump chapter_4_minju
+    else:
+        jump chapter_4_dock
 
 
 label chapter_4_kongmiao:
@@ -175,5 +174,6 @@ label chapter_4_finish:
     narrator_day1 "临时校园在整座梅城中展开，而新的警报声也越来越近。"
 
     $ day1_finish_chapter(4)
+    call immersive_hide
     centered "{size=44}第四章完成{/size}\n“黑板挂在我的胸前”已解锁"
     jump day1_map_hub

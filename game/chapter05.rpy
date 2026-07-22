@@ -2,8 +2,15 @@ label chapter_5:
     scene bg ch5
     with fade
 
-    centered "{size=50}第五章　黑板挂在我的胸前{/size}\n{size=32}警报中的课堂{/size}"
+    centered "{size=50}第五章  黑板挂在我的胸前{/size}\n{size=32}警报中的课堂{/size}"
     pause 0.8
+
+    $ immersive_setup("第五章  警报中的课堂", "1937年冬  建德", "安全疏散并让课堂继续", [("组织学生疏散", False), ("带回教学材料", False), ("完成临时课堂", False)], ["优先保护人员", "保持队伍秩序"], ["课程笔记", "粉笔", "油灯"], 4, "tense")
+    call immersive_show
+    $ ch5_spots = []
+    jump ch5_explore_hub
+
+label ch5_story:
 
     narrator_day1 "临时课堂刚开始不久，远处响起防空警报。"
     zs "先合上书。按昨天演练的顺序离开。"
@@ -84,5 +91,6 @@ label chapter_5:
     sy "我把最后一句写进笔记。"
 
     $ day1_finish_chapter(5)
+    call immersive_hide
     centered "{size=44}第五章完成{/size}\n《浙大日报》已解锁"
     jump day1_map_hub

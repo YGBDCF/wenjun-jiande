@@ -10,11 +10,21 @@ define radio = Character("广播声", color="#9cb9c1", what_italic=True)
 define narrator_day1 = Character("旁白", color="#d7d0be")
 
 image bg ch1 = "images/chapter_01.jpg"
-image bg ch2 = "images/chapter_02.jpg"
-image bg ch3 = "images/chapter_03.jpg"
-image bg ch4 = "images/chapter_04.jpg"
-image bg ch5 = "images/chapter_05.jpg"
-image bg ch6 = "images/chapter_06.jpg"
+image bg ch2:
+    "images/chapter02/jianggan_wharf.png"
+    xysize (1920, 1080)
+image bg ch3:
+    "images/chapter03/siku_cargo_hold.png"
+    xysize (1920, 1080)
+image bg ch4:
+    "images/chapter04/meicheng_campus.png"
+    xysize (1920, 1080)
+image bg ch5:
+    "images/chapter05/air_raid_classroom.png"
+    xysize (1920, 1080)
+image bg ch6:
+    "images/chapter06/newspaper_room.png"
+    xysize (1920, 1080)
 
 
 label start:
@@ -27,6 +37,11 @@ label start:
 
 
 label day1_map_hub:
+    hide screen ch1_character
+    hide screen ch1_hud
+    hide screen immersive_character
+    hide screen immersive_hud
+    $ immersive_active = False
     call screen day1_chapter_map
     $ selected_chapter = _return
 
