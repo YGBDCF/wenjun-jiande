@@ -52,11 +52,17 @@ transform ch1_portrait_tense:
 screen ch1_character():
     zorder 5
     if ch1_pose == "thoughtful":
-        add "ch1 shenyan" at ch1_portrait_thoughtful
+        add "shenyan thoughtful" at ch1_portrait_thoughtful
     elif ch1_pose == "tense":
-        add "ch1 shenyan" at ch1_portrait_tense
+        add "shenyan tense" at ch1_portrait_tense
+    elif ch1_pose == "determined":
+        add "shenyan determined" at ch1_portrait_calm
+    elif ch1_pose == "worried":
+        add "shenyan worried" at ch1_portrait_tense
+    elif ch1_pose == "relieved":
+        add "shenyan relieved" at ch1_portrait_calm
     else:
-        add "ch1 shenyan" at ch1_portrait_calm
+        add "shenyan calm" at ch1_portrait_calm
 
 screen ch1_hud():
     zorder 30

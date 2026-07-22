@@ -7,6 +7,7 @@ default day1_morale = 0
 default day1_supplies = 0
 
 default ch4_places = []
+default ch4_return_to_world_map = False
 default newspaper_choice = ""
 
 
@@ -32,3 +33,12 @@ init python:
                 store.day1_current_chapter,
                 chapter_id + 1
             )
+
+    def day1_meicheng_unlocked(location_id):
+        if location_id in ("kongmiao", "minju"):
+            return True
+        if location_id in ("linchang", "pawnshop"):
+            return "kongmiao" in store.ch4_places and "minju" in store.ch4_places
+        if location_id in ("office", "dock"):
+            return "linchang" in store.ch4_places and "pawnshop" in store.ch4_places
+        return False

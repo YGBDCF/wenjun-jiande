@@ -31,11 +31,17 @@ init python:
 screen immersive_character():
     zorder 5
     if immersive_pose == "thoughtful":
-        add "ch1 shenyan" at ch1_portrait_thoughtful
+        add "shenyan thoughtful" at ch1_portrait_thoughtful
     elif immersive_pose == "tense":
-        add "ch1 shenyan" at ch1_portrait_tense
+        add "shenyan tense" at ch1_portrait_tense
+    elif immersive_pose == "determined":
+        add "shenyan determined" at ch1_portrait_calm
+    elif immersive_pose == "worried":
+        add "shenyan worried" at ch1_portrait_tense
+    elif immersive_pose == "relieved":
+        add "shenyan relieved" at ch1_portrait_calm
     else:
-        add "ch1 shenyan" at ch1_portrait_calm
+        add "shenyan calm" at ch1_portrait_calm
 
 screen immersive_hud():
     zorder 30
