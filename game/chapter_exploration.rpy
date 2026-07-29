@@ -4,6 +4,63 @@ default ch3_spots = []
 default ch5_spots = []
 default ch6_spots = []
 
+
+# 第二、三章使用的通用“场景待办”界面。每一幕都有自己的背景，
+# 玩家退出对话后回到画面调查，人物立绘会自动隐藏。
+screen chapter_task_scene(background_image, scene_title, scene_subtitle, task_list, completed_tasks):
+    modal True
+    add background_image
+    add Solid("#0408082c")
+
+    frame:
+        xpos 42
+        ypos 38
+        xsize 650
+        ysize 122
+        background Solid("#0a1111e8")
+        padding (25, 17)
+        vbox:
+            spacing 5
+            text "[scene_title]" size 34 color "#ead49e"
+            text "[scene_subtitle]" size 18 color "#c7c3b7"
+
+    for task_id, task_name, tx, ty, tw, th in task_list:
+        $ task_done = task_id in completed_tasks
+        button:
+            xpos tx
+            ypos ty
+            xsize tw
+            ysize th
+            background Solid("#00000000")
+            hover_background (Solid("#d0a24a35") if not task_done else Solid("#00000000"))
+            action (Return(task_id) if not task_done else NullAction())
+
+            frame:
+                xalign 0.5
+                yalign 0.88
+                xminimum 230
+                yminimum 62
+                background ("images/chapter01/ui/choice_idle.png" if task_done else "images/chapter01/ui/choice_hover.png")
+                padding (15, 8)
+                vbox:
+                    xalign 0.5
+                    yalign 0.5
+                    text task_name size 21 color ("#a9c992" if task_done else "#f2d58d") xalign 0.5
+                    text ("已完成" if task_done else "点击调查") size 15 color ("#91ad7d" if task_done else "#d9caa5") xalign 0.5
+
+    if len(completed_tasks) == len(task_list):
+        textbutton "完成本幕":
+            xpos 1110
+            ypos 910
+            xsize 350
+            ysize 76
+            action Return("continue")
+            background "images/chapter01/ui/choice_hover.png"
+            hover_background Solid("#74552fdc")
+            text_size 24
+            text_color "#f5d994"
+
+
 screen historical_location_map(background_image, title_text, spots, completed_spots, unlocked_spots=None):
     modal True
     add background_image
@@ -54,7 +111,7 @@ label ch2_explore_hub:
     if len(ch2_spots) >= 3:
         scene bg ch2
         show screen immersive_character
-        jump ch2_story
+        jump chapter_2
     call screen historical_location_map("bg ch2", "江干码头  撤离现场", [("wharf", "登船队伍", 260, 360, 330, 300), ("crates", "待核木箱区", 650, 390, 350, 280), ("boat", "首批船舱", 1110, 330, 330, 330)], ch2_spots)
     if _return == "wharf":
         scene bg ch2 with dissolve
@@ -84,7 +141,7 @@ label ch3_explore_hub:
     if len(ch3_spots) >= 3:
         scene bg ch3
         show screen immersive_character
-        jump ch3_story
+        jump chapter_3
     call screen historical_location_map("bg ch3", "典籍运输船  检查现场", [("table", "封签核对台", 1020, 470, 370, 280), ("crates", "典籍木箱", 380, 300, 520, 390), ("gangplank", "换船跳板", 1120, 120, 360, 300)], ch3_spots)
     if _return == "table":
         scene ch3 seals with dissolve

@@ -137,30 +137,30 @@ style namebox_label is say_label
 
 style ch1_window is window:
     background "images/chapter01/ui/dialogue_panel.png"
-    xpos 360
-    xsize 1130
-    ysize 300
+    xpos 250
+    xsize 1240
+    ysize 315
     yalign 1.0
 
 style ch1_namebox is namebox:
-    xpos 58
-    ypos 12
-    xsize 310
-    ysize 72
+    xpos 88
+    ypos 18
+    xsize 330
+    ysize 54
     background None
-    left_padding 28
-    right_padding 28
+    left_padding 0
+    right_padding 0
 
 style ch1_say_label is say_label:
-    color "#65451f"
-    size 28
+    color "#6c4d25"
+    size 27
     xalign 0.0
 
 style ch1_say_dialogue is say_dialogue:
-    xpos 76
-    ypos 78
-    xsize 970
-    size 26
+    xpos 88
+    ypos 82
+    xsize 1060
+    size 27
     color "#30291f"
     line_spacing 9
 
@@ -240,38 +240,24 @@ style input:
 screen choice(items):
     zorder 25
     if renpy.get_screen("ch1_hud") or renpy.get_screen("immersive_hud"):
-        if len(items) <= 3:
-            hbox:
-                xpos 366
-                ypos 1008
-                spacing 6
+        frame:
+            xpos 390
+            ypos 360
+            xsize 1020
+            background Solid("#0a1111e6")
+            padding (22, 22)
+            vbox:
+                spacing 12
                 for i in items:
                     textbutton i.caption:
                         action i.action
-                        xsize 370
-                        ysize 58
-                        background Solid("#00000000")
-                        hover_background Solid("#d2aa5828")
-                        text_size 20
-                        text_color "#40372b"
-                        text_hover_color "#8a6428"
-                        text_xalign 0.5
-                        text_yalign 0.5
-        else:
-            grid 2 2:
-                xpos 510
-                ypos 850
-                spacing 8
-                for i in items:
-                    textbutton i.caption:
-                        action i.action
-                        xsize 480
-                        ysize 68
-                        background Solid("#d8c9a7e8")
-                        hover_background Solid("#d2aa5840")
-                        text_size 20
-                        text_color "#40372b"
-                        text_hover_color "#8a6428"
+                        xsize 976
+                        ysize 78
+                        background Frame(Solid("#171b18f0"), 2, 2)
+                        hover_background Frame(Solid("#4b371fdc"), 2, 2)
+                        text_size 23
+                        text_color "#e8ddc8"
+                        text_hover_color "#f1cd7b"
                         text_xalign 0.5
                         text_yalign 0.5
     else:

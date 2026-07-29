@@ -46,6 +46,15 @@ screen immersive_character():
 screen immersive_hud():
     zorder 30
 
+    frame:
+        xpos 470
+        ypos 18
+        xsize 780
+        ysize 58
+        background "images/chapter01/ui/top_button.png"
+        padding (28, 11)
+        text "[immersive_date]" size 21 color "#dec78f" xalign 0.5 yalign 0.5
+
     hbox:
         xpos 1540
         ypos 24
@@ -62,7 +71,7 @@ screen immersive_hud():
         vbox:
             spacing 11
             text "[immersive_chapter]" size 25 color "#dfc480" xmaximum 300
-            text "[immersive_date]" size 18 color "#aeb6b1"
+            text "历史叙事章节" size 17 color "#aeb6b1"
             null height 8
             text "当前目标" size 25 color "#e8d6a7"
             text "[immersive_objective]" size 19 color "#ffffff" xmaximum 300
