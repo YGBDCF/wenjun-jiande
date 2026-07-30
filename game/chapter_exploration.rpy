@@ -10,19 +10,19 @@ default ch6_spots = []
 screen chapter_task_scene(background_image, scene_title, scene_subtitle, task_list, completed_tasks):
     modal True
     add background_image
-    add Solid("#0408082c")
 
-    frame:
+    vbox:
         xpos 42
         ypos 38
-        xsize 650
-        ysize 122
-        background Solid("#0a1111e8")
-        padding (25, 17)
-        vbox:
-            spacing 5
-            text "[scene_title]" size 34 color "#ead49e"
-            text "[scene_subtitle]" size 18 color "#c7c3b7"
+        spacing 5
+        text "[scene_title]":
+            size 34
+            color "#ead49e"
+            outlines [(3, "#11130f", 0, 0)]
+        text "[scene_subtitle]":
+            size 18
+            color "#e1ddd1"
+            outlines [(2, "#11130f", 0, 0)]
 
     for task_id, task_name, tx, ty, tw, th in task_list:
         $ task_done = task_id in completed_tasks
@@ -32,21 +32,22 @@ screen chapter_task_scene(background_image, scene_title, scene_subtitle, task_li
             xsize tw
             ysize th
             background Solid("#00000000")
-            hover_background (Solid("#d0a24a35") if not task_done else Solid("#00000000"))
+            hover_background Solid("#00000000")
             action (Return(task_id) if not task_done else NullAction())
 
             frame:
                 xalign 0.5
                 yalign 0.88
-                xminimum 230
-                yminimum 62
-                background ("images/chapter01/ui/choice_idle.png" if task_done else "images/chapter01/ui/choice_hover.png")
-                padding (15, 8)
+                xsize 270
+                ysize 62
+                background (Solid("#273321d9") if task_done else Solid("#694820df"))
+                padding (10, 6)
                 vbox:
                     xalign 0.5
                     yalign 0.5
-                    text task_name size 21 color ("#a9c992" if task_done else "#f2d58d") xalign 0.5
-                    text ("已完成" if task_done else "点击调查") size 15 color ("#91ad7d" if task_done else "#d9caa5") xalign 0.5
+                    spacing 1
+                    text task_name size 19 color ("#b9d49e" if task_done else "#f2d58d") xalign 0.5
+                    text ("已完成" if task_done else "点击调查") size 14 color ("#9fbd88" if task_done else "#e2d4b0") xalign 0.5
 
     if len(completed_tasks) == len(task_list):
         textbutton "完成本幕":
@@ -64,15 +65,19 @@ screen chapter_task_scene(background_image, scene_title, scene_subtitle, task_li
 screen historical_location_map(background_image, title_text, spots, completed_spots, unlocked_spots=None):
     modal True
     add background_image
-    add Solid("#050a0b32")
 
-    frame:
-        xpos 48 ypos 38 xsize 610 ysize 116
-        background Solid("#091010dd")
-        padding (24, 17)
-        vbox:
-            text "[title_text]" size 31 color "#e4c982"
-            text "点击画面中的地点进行调查" size 18 color "#c7c3b7"
+    vbox:
+        xpos 48
+        ypos 38
+        spacing 4
+        text "[title_text]":
+            size 31
+            color "#e4c982"
+            outlines [(3, "#11130f", 0, 0)]
+        text "点击画面中的地点进行调查":
+            size 18
+            color "#e1ddd1"
+            outlines [(2, "#11130f", 0, 0)]
 
     for spot_id, spot_name, sx, sy, sw, sh in spots:
         $ is_done = spot_id in completed_spots
@@ -80,25 +85,26 @@ screen historical_location_map(background_image, title_text, spots, completed_sp
         button:
             xpos sx ypos sy xsize sw ysize sh
             background Solid("#00000000")
-            hover_background (Solid("#c89a3638") if is_unlocked and not is_done else Solid("#00000000"))
+            hover_background Solid("#00000000")
             action (Return(spot_id) if is_unlocked and not is_done else NullAction())
             frame:
                 xalign 0.5 yalign 0.82
-                xminimum 190 yminimum 58
-                padding (18, 10)
-                background ("images/chapter01/ui/choice_hover.png" if is_unlocked and not is_done else "images/chapter01/ui/choice_idle.png")
+                xsize 250
+                ysize 60
+                padding (10, 6)
+                background (Solid("#694820df") if is_unlocked and not is_done else Solid("#222824d9"))
                 vbox:
-                    xalign 0.5 yalign 0.5 spacing 2
+                    xalign 0.5 yalign 0.5 spacing 1
                     text "[spot_name]":
-                        xalign 0.5 size 21
+                        xalign 0.5 size 19
                         color ("#b9d49e" if is_done else ("#777a76" if not is_unlocked else "#f1d590"))
                         outlines [(2, "#17130d", 0, 0)]
                     if is_done:
-                        text "已完成" xalign 0.5 size 15 color "#9fbd88"
+                        text "已完成" xalign 0.5 size 14 color "#9fbd88"
                     elif not is_unlocked:
-                        text "尚未解锁" xalign 0.5 size 15 color "#747772"
+                        text "尚未解锁" xalign 0.5 size 14 color "#858881"
                     else:
-                        text "点击进入" xalign 0.5 size 15 color "#d3c49d"
+                        text "点击进入" xalign 0.5 size 14 color "#e2d4b0"
 
     textbutton "返回章节地图":
         xpos 48 ypos 1000
@@ -170,7 +176,7 @@ label ch5_explore_hub:
     if len(ch5_spots) >= 3:
         scene bg ch5
         show screen immersive_character
-        jump ch5_story
+        jump chapter_5
     call screen historical_location_map("bg ch5", "梅城临时课堂  警报前", [("classroom", "课堂与教具", 170, 280, 540, 400), ("alley", "疏散出口", 770, 130, 390, 470), ("shelter", "临时避难处", 1190, 500, 300, 330)], ch5_spots)
     if _return == "classroom":
         scene bg ch5 with dissolve
@@ -197,7 +203,7 @@ label ch6_explore_hub:
     if len(ch6_spots) >= 3:
         scene bg ch6
         show screen immersive_character
-        jump ch6_story
+        jump chapter_6
     call screen historical_location_map("bg ch6", "《浙大日报》编辑室", [("radio", "广播收听台", 70, 390, 350, 300), ("desk", "编辑核实桌", 500, 430, 470, 330), ("press", "油印与分发", 1080, 260, 390, 420)], ch6_spots)
     if _return == "radio":
         scene ch6 radio with dissolve

@@ -1,260 +1,425 @@
+# ================================================================
+# 第四章：建德梅城——一城皆为讲舍
+# 正式剧本编号：ZJU-1937-04
+# ================================================================
+
+define zhou = Character("周顺安", color="#c7ad79")
+define householder = Character("房主", color="#bda98a")
+define administrator = Character("行政人员", color="#c3baa5")
+
+default ch4_task_progress = {}
+default ch4_current_place = ""
+default ch4_location_tasks = []
+default ch4_lamp_choice = ""
+default ch4_literacy_choice = ""
+
+init python:
+    CH4_LOCATION_META = {
+        "dock": (
+            "梅城码头外",
+            "1937年11月中旬 · 黄昏",
+            "ch4 dock",
+            "理解梅城没有统一校园边界",
+            [
+                ("dock_manifest", "核对到埠名册", 160, 300, 350, 350),
+                ("dock_route", "询问入城路线", 600, 370, 370, 300),
+                ("dock_crates", "疏通木箱通道", 1040, 270, 390, 370),
+            ],
+        ),
+        "kongmiao": (
+            "孔庙临时课堂",
+            "1937年11月中旬 · 次日清晨",
+            "ch4 kongmiao",
+            "送达讲义并让第一堂课准时开始",
+            [
+                ("kong_sign", "修正时间木牌", 160, 290, 350, 360),
+                ("kong_lectures", "追回错送讲义", 600, 365, 370, 300),
+                ("kong_seats", "借凳重排座位", 1040, 260, 390, 380),
+            ],
+        ),
+        "minju": (
+            "东门街民居",
+            "1937年11月中旬 · 傍晚",
+            "ch4 minju",
+            "与居民共同制定借屋规则",
+            [
+                ("home_furniture", "确认家具边界", 160, 300, 350, 350),
+                ("home_water", "约定用水时段", 600, 370, 370, 300),
+                ("home_rules", "写下安静与防火规则", 1040, 270, 390, 370),
+            ],
+        ),
+        "linchang": (
+            "林场办公与自习点",
+            "1937年11月中旬 · 午后",
+            "ch4 linchang",
+            "处理四件同时紧急的校务",
+            [
+                ("forest_water", "协调饮水", 160, 300, 350, 350),
+                ("forest_leak", "遮住漏雨处", 600, 370, 370, 300),
+                ("forest_lamp", "分配最后灯油", 1040, 270, 390, 370),
+            ],
+        ),
+        "pawnshop": (
+            "东城当铺宿舍",
+            "1937年11月中旬 · 入夜前",
+            "ch4 pawnshop",
+            "让宿舍、物资与疏散通道同时可用",
+            [
+                ("pawn_beds", "安排草席铺位", 160, 300, 350, 350),
+                ("pawn_storage", "划分物资区", 600, 370, 370, 300),
+                ("pawn_passage", "保留中央通道", 1040, 270, 390, 370),
+            ],
+        ),
+        "office": (
+            "方宅校务办公处",
+            "1937年11月中下旬 · 深夜",
+            "ch4 office",
+            "把分散房屋接入同一张课表",
+            [
+                ("office_lodging", "核实今晚可住", 160, 300, 350, 350),
+                ("office_schedule", "发布第四版课表", 600, 370, 370, 300),
+                ("office_report", "向孙宅准确汇报", 1040, 270, 390, 370),
+            ],
+        ),
+    }
+
+
 label chapter_4:
-    scene bg ch4
-    with fade
-
-    centered "{size=50}第四章  建德梅城{/size}\n{size=32}四十五天建起一所大学{/size}"
-    pause 0.8
-
-    $ immersive_setup("第四章  建德梅城", "1937年11月  梅城", "在城中重新建立临时校园", [("布置孔庙课堂", False), ("安顿民居宿舍", False), ("建立林场办公点", False), ("整理当铺住宿区", False), ("设置校务办公处", False), ("接收码头物资", False)], ["尊重居民原有生活", "恢复教学秩序"], ["梅城简图", "房屋登记册"], 3, "calm")
-    call immersive_show from _call_immersive_show_2
-
-    narrator_day1 "师生抵达梅城后，办公室、教室和宿舍被分散安置在城中各处。"
-    yq "你们带来的人比我想象得还多。"
-    sy "还有书、仪器和家属。"
-    yq "梅城不大，空房也不是凭空长出来的。"
-    sy "我们会尽量不影响居民生活。"
-    yq "‘尽量’是最好说的一句话，也是最难做到的一句话。"
-    narrator_day1 "叶青禾是本地青年，熟悉街巷和住户。"
-    yq "孔庙可以摆课桌，林场能办公，东门街有几户人家愿意腾房。"
-    sy "那已经够组成一所学校了。"
-    yq "不够。你们还需要水、灯、床铺、厨房和能躲警报的地方。"
-    sy "那就一处处解决。"
-    yq "好。你先别把梅城当作一张空白地图。这里的每一间屋子都有人生活。"
-    narrator_day1 "六处地点会随安置工作的推进分批解锁。"
-
     $ ch4_places = []
+    $ ch4_task_progress = {}
+    $ ch4_lamp_choice = ""
+    $ ch4_literacy_choice = ""
+    $ immersive_items = ["梅城校舍简图", "房屋登记册"]
+    $ immersive_archive_count = 3
+    $ ch4_return_to_world_map = False
+    call screen chapter_title_card(
+        "images/chapter04/meicheng_campus.png",
+        "第四章",
+        "建德梅城",
+        "一城皆为讲舍",
+        "1937年11月中旬至12月下旬"
+    )
+    scene bg ch4
+    show screen immersive_hud
+    narrator_day1 "梅城不是一片等待学校改造的空地。这里已有居民、店铺、庙宇、街巷和自己的生活秩序。"
+    gu "二年级住东城当铺。天目山来的一年级，先去严州中学第二部登记。"
+    sy "教室、宿舍、办公厅全不在一处。浙江大学究竟在何处？"
+    zhou "此处不是，前街也不是。可这些日子，城里处处都是你们的人。"
+    menu:
+        "我怎样进入梅城？"
+        "请周顺安带路，并教他认课表":
+            $ ch4_literacy_choice = "课表识字"
+            $ day1_trust += 1
+        "按校舍图寻找登记处":
+            $ ch4_literacy_choice = "自绘街巷"
+            $ day1_records += 1
+        "留下协助卸书箱":
+            $ ch4_literacy_choice = "码头协作"
+            $ day1_trust += 1
     jump chapter_4_hub
 
 
 label chapter_4_hub:
     hide screen immersive_character
-    $ immersive_tasks = [("布置孔庙课堂", "kongmiao" in ch4_places), ("安顿民居宿舍", "minju" in ch4_places), ("建立林场办公点", "linchang" in ch4_places), ("整理当铺住宿区", "pawnshop" in ch4_places), ("设置校务办公处", "office" in ch4_places), ("接收码头物资", "dock" in ch4_places)]
-    if len(ch4_places) >= 6:
-        jump chapter_4_finish
-    $ ch4_unlocked = ["kongmiao", "minju"]
+    $ immersive_chapter = "第四章  建德梅城"
+    $ immersive_date = "1937年11月至12月 · 梅城"
+    $ immersive_objective = "让六处分散地点依同一张课表运转"
+    $ immersive_tasks = [
+        ("接收梅城码头物资", "dock" in ch4_places),
+        ("布置孔庙课堂", "kongmiao" in ch4_places),
+        ("协商民居宿舍", "minju" in ch4_places),
+        ("建立林场办公点", "linchang" in ch4_places),
+        ("整理当铺住宿区", "pawnshop" in ch4_places),
+        ("接通校务办公处", "office" in ch4_places),
+    ]
+    $ immersive_secondary = ["不扰乱居民原有生活", "课程迁移期间不停"]
+    $ ch4_unlocked = ["dock"]
+    if "dock" in ch4_places:
+        $ ch4_unlocked += ["kongmiao", "minju"]
     if "kongmiao" in ch4_places and "minju" in ch4_places:
         $ ch4_unlocked += ["linchang", "pawnshop"]
     if "linchang" in ch4_places and "pawnshop" in ch4_places:
-        $ ch4_unlocked += ["office", "dock"]
-    call screen historical_location_map("bg ch4", "建德梅城  临时校园", [("kongmiao", "孔庙", 100, 210, 420, 300), ("minju", "民居", 530, 420, 300, 270), ("linchang", "林场", 650, 100, 350, 270), ("pawnshop", "当铺", 920, 430, 300, 270), ("office", "校务办公处", 1110, 120, 350, 270), ("dock", "梅城码头", 1280, 430, 280, 300)], ch4_places, ch4_unlocked)
-    if _return == "kongmiao":
-        jump chapter_4_kongmiao
-    elif _return == "linchang":
-        jump chapter_4_linchang
-    elif _return == "minju":
-        jump chapter_4_minju
-    elif _return == "pawnshop":
-        jump chapter_4_pawnshop
-    elif _return == "office":
-        jump chapter_4_office
-    else:
+        $ ch4_unlocked += ["office"]
+    if len(ch4_places) >= 6:
+        jump chapter_4_morning_check
+    show screen immersive_hud
+    call screen historical_location_map(
+        "bg ch4",
+        "建德梅城  分散的临时校园",
+        [
+            ("kongmiao", "孔庙", 100, 210, 420, 300),
+            ("minju", "民居", 530, 420, 300, 270),
+            ("linchang", "林场", 650, 100, 350, 270),
+            ("pawnshop", "当铺", 920, 430, 300, 270),
+            ("office", "校务办公处", 1110, 120, 350, 270),
+            ("dock", "梅城码头", 1280, 430, 280, 300),
+        ],
+        ch4_places,
+        ch4_unlocked,
+    )
+    $ ch4_map_choice = _return
+    if ch4_map_choice == "dock":
         jump chapter_4_dock
+    elif ch4_map_choice == "kongmiao":
+        jump chapter_4_kongmiao
+    elif ch4_map_choice == "minju":
+        jump chapter_4_minju
+    elif ch4_map_choice == "linchang":
+        jump chapter_4_linchang
+    elif ch4_map_choice == "pawnshop":
+        jump chapter_4_pawnshop
+    elif ch4_map_choice == "office":
+        jump chapter_4_office
+    jump chapter_4_hub
 
 
-label chapter_4_kongmiao:
-    scene ch4 kongmiao with dissolve
-    $ immersive_pose = "thoughtful"
-    show screen immersive_character
-    sy "孔庙正殿宽敞，屋檐也能遮雨。"
-    yq "但祭器、旧匾额和居民平日使用的空间都不能随意搬走。"
-    sy "如果只使用两侧，能坐下的人会少很多。"
-    yq "如果全占下来，附近的人会觉得学校一来，自己的地方就没有了。"
-    sy "课堂要建立，关系也不能毁掉。"
+label ch4_run_location(place):
+    $ ch4_current_place = place
+    $ ch4_meta = CH4_LOCATION_META[place]
+    $ ch4_location_tasks = list(ch4_task_progress.get(place, []))
+    $ immersive_chapter = "第四章  建德梅城"
+    $ immersive_date = ch4_meta[1]
+    $ immersive_objective = ch4_meta[3]
+    $ immersive_tasks = [(task[1], task[0] in ch4_location_tasks) for task in ch4_meta[4]]
+    $ immersive_secondary = ["借用不等于占有", "完成后恢复原状"]
+    show screen immersive_hud
 
-    menu:
-        "如何布置临时课堂？"
-
-        "保留原有陈设，只使用两侧空间":
-            $ day1_trust += 1
-            yq "人挤一些，但至少大家愿意继续借给你们。"
-            sy "我们把长凳排得更紧，让高年级学生轮流使用。"
-
-        "集中陈设，尽量多摆课桌":
-            $ day1_morale += 1
-            yq "能坐更多学生，不过每天都要有人负责整理和看守。"
-            sy "我把这项工作写进值日表。"
-
-    sy "第一块黑板挂起来时，整个正殿忽然像一间真正的教室。"
-    yq "只是像。"
-    sy "课程开始以后，就是。"
-    if "kongmiao" not in ch4_places:
-        $ ch4_places.append("kongmiao")
+label ch4_location_loop:
+    $ ch4_meta = CH4_LOCATION_META[ch4_current_place]
+    scene expression ch4_meta[2]
     hide screen immersive_character
-    jump chapter_4_location_return
-
-
-label chapter_4_linchang:
-    scene ch4 linchang with dissolve
-    $ immersive_pose = "calm"
-    show screen immersive_character
-    narrator_day1 "林场被安排为教师住处和行政办公地点。"
-    sy "这里离街市远，夜里很安静。"
-    yq "也很黑。你们带来的油灯不够。"
-    sy "课程表、布告和物资清单都需要连夜整理。"
-    yq "教师也要备课。两边都不能完全停。"
-
-    menu:
-        "有限的油灯先给哪里？"
-
-        "优先给收发公文和课程安排的办公室":
-            $ day1_supplies += 1
-            sy "布告在夜里写好，第二天一早就能贴到各处。"
-            yq "至少不会再有人走错教室。"
-
-        "优先给教员备课的房间":
-            $ day1_morale += 1
-            sy "老师们把第二天要讲的内容重新整理出来。"
-            yq "看来你们是真的准备在这里继续上课。"
-
-    zc "临时并不意味着可以无序。越是分散，越需要每一份通知准确。"
-    sy "竺校长站在门边，鞋上还带着泥。"
-    zc "一所大学可以暂时没有校门，但不能没有秩序。"
-    if "linchang" not in ch4_places:
-        $ ch4_places.append("linchang")
-    hide screen immersive_character
-    jump chapter_4_location_return
-
-
-label chapter_4_minju:
-    scene ch4 minju with dissolve
-    $ immersive_pose = "worried"
-    show screen immersive_character
-    narrator_day1 "东门街一户居民愿意腾出两间房，条件是学校不能完全占用厨房和前厅。"
-    yq "这家人有老人和孩子。你们住进来以后，不能把他们挤到角落里。"
-    sy "可学生人数比床位多一倍。"
-    yq "所以要谈，不是命令。"
-    sy "我明白。"
-
-    menu:
-        "如何安排住宿？"
-
-        "减少床位，保证居民继续使用厨房和前厅":
-            $ day1_trust += 2
-            yq "地方更挤，但屋主愿意长期借下去。"
-            sy "学生分成两班，一部分打地铺，一部分轮流值夜。"
-
-        "由学校负责修缮和搬运，换取更多空间":
-            $ day1_supplies -= 1
-            $ day1_trust += 1
-            yq "只要说到做到，街坊会接受。"
-            sy "我们修好漏雨的屋瓦，又把居民的家具原样搬回。"
-
-    yq "你们总说自己只是暂住。"
-    sy "因为我们不知道什么时候又要走。"
-    yq "可只要住进来一天，就会留下痕迹。"
-    sy "那我们应该让留下的痕迹尽量不只是麻烦。"
-    if "minju" not in ch4_places:
-        $ ch4_places.append("minju")
-    hide screen immersive_character
-    jump chapter_4_location_return
+    call screen chapter_task_scene(
+        ch4_meta[2],
+        ch4_meta[0],
+        "地点完成后会解锁下一批校舍",
+        ch4_meta[4],
+        ch4_location_tasks,
+    )
+    $ ch4_selected = _return
+    if ch4_selected == "continue":
+        if ch4_current_place not in ch4_places:
+            $ ch4_places.append(ch4_current_place)
+        $ ch4_task_progress[ch4_current_place] = list(ch4_location_tasks)
+        return
+    call expression "ch4_task_" + ch4_selected from _call_expression_2
+    if ch4_selected not in ch4_location_tasks:
+        $ ch4_location_tasks.append(ch4_selected)
+    $ ch4_task_progress[ch4_current_place] = list(ch4_location_tasks)
+    jump ch4_location_loop
 
 
 label chapter_4_dock:
-    scene ch4 dock with dissolve
-    $ immersive_pose = "determined"
-    show screen immersive_character
-    narrator_day1 "码头又到了一批书籍和仪器，部分木箱已经受潮。"
-    ls "受潮书籍先晾，箱号不清的单独放，仪器不能堆在外面。"
-    sy "人手不够。"
-    yq "我可以叫几个熟悉码头的人来帮忙，但你们得告诉他们怎么分。"
-    sy "那就先把规则写在木牌上。"
-    ls "很好。不要让每个人都来问同一个问题。"
-
-    menu:
-        "首先处理哪一批物资？"
-
-        "优先抢救受潮书籍":
-            $ day1_records += 1
-            sy "我们把书页一册册分开，屋里很快全是潮湿的纸味。"
-            yq "这些书晒干以后，还能继续用吗？"
-            ls "有些能，有些只能尽力保住内容。"
-
-        "优先登记仪器和箱号，避免继续混放":
-            $ day1_supplies += 2
-            sy "清单写得很慢，却让之后每一次搬运都更快。"
-            yq "原来秩序也能节省力气。"
-            ls "尤其是在所有人都很疲惫的时候。"
-
-    oldzhou "下一条船明早到。你们今晚最好把空地腾出来。"
-    sy "我们点亮两盏灯，继续整理到深夜。"
-    if "dock" not in ch4_places:
-        $ ch4_places.append("dock")
-    hide screen immersive_character
+    call ch4_run_location("dock") from _call_ch4_run_location
     jump chapter_4_location_return
 
+label chapter_4_kongmiao:
+    call ch4_run_location("kongmiao") from _call_ch4_run_location_1
+    jump chapter_4_location_return
+
+label chapter_4_minju:
+    call ch4_run_location("minju") from _call_ch4_run_location_2
+    jump chapter_4_location_return
+
+label chapter_4_linchang:
+    call ch4_run_location("linchang") from _call_ch4_run_location_3
+    jump chapter_4_location_return
 
 label chapter_4_pawnshop:
-    scene ch4 pawnshop with dissolve
-    $ immersive_pose = "thoughtful"
-    show screen immersive_character
-    narrator_day1 "旧当铺的高柜台后堆着木箱，空地可以铺下数十张草席。"
-    yq "这里能住人，也能存放不怕潮的物资，但不能把通道堵死。"
-    sy "我们把寝铺沿墙安排，中间留出搬运和夜间疏散的路。"
-    menu:
-        "当铺内部怎样分区？"
-        "柜台后存放物资，外间安置学生":
-            $ day1_supplies += 1
-            sy "物资与寝铺分开，清点时不会踩过别人的被褥。"
-        "先留出最宽的中央通道":
-            $ day1_trust += 1
-            yq "拥挤是免不了的，至少不能让拥挤变成危险。"
-    sy "最后一盏灯挂起来时，当铺不再只是仓库，也成了临时宿舍。"
-    if "pawnshop" not in ch4_places:
-        $ ch4_places.append("pawnshop")
-    hide screen immersive_character
+    call ch4_run_location("pawnshop") from _call_ch4_run_location_4
     jump chapter_4_location_return
-
 
 label chapter_4_office:
-    scene ch4 office with dissolve
+    call ch4_run_location("office") from _call_ch4_run_location_5
+    jump chapter_4_location_return
+
+
+label ch4_task_dock_manifest:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    gu "一年级先登记住处。写清楚今晚可住，还是明早可住。"
+    sy "一个‘正在整理’，不能给人当床铺。"
+    hide screen immersive_character
+    return
+
+label ch4_task_dock_route:
+    $ immersive_pose = "calm"
+    show screen immersive_character
+    zhou "城里没有一扇门能通向所有教室。先记街，再认木牌。"
+    sy "那便从今日最用得上的字认起：上午八时，临时教室。"
+    hide screen immersive_character
+    return
+
+label ch4_task_dock_crates:
     $ immersive_pose = "determined"
     show screen immersive_character
-    narrator_day1 "校务办公处里，名册、课程表、房屋登记和运输清单占满长桌。"
-    zc "地点分散以后，准确的记录就是学校的经纬。"
-    sy "我把各处联络人、灯火使用和次日课程逐项抄进总册。"
-    menu:
-        "今晚优先整理哪份记录？"
-        "先核对师生与住宿名册":
-            $ day1_records += 1
-            zc "先知道每个人在哪里，遇到警报才不会遗漏。"
-        "先发布次日课程与地点":
-            $ day1_morale += 1
-            sy "布告送到各住处后，学生终于知道明早该往哪里走。"
-    narrator_day1 "分散在城里的房屋，因为这张总表第一次被连成了一所大学。"
-    if "office" not in ch4_places:
-        $ ch4_places.append("office")
+    narrator_day1 "师生把图书、仪器与铺盖分开，先清出人员通道。"
+    sy "不能让一只箱子堵住一堂课，也不能堵住一条回家的路。"
     hide screen immersive_character
-    jump chapter_4_location_return
+    return
+
+label ch4_task_kong_sign:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    zhou "我只是不认得那几个字。若真按我指的路走错，岂不是更耽误？"
+    sy "木牌改成：上午八时，孔庙临时教室。一个字也不能含糊。"
+    hide screen immersive_character
+    return
+
+label ch4_task_kong_lectures:
+    $ immersive_pose = "determined"
+    show screen immersive_character
+    gu "我去追回错送讲义。许南枝核下一堂地点，你补座位。半个时辰后报结果。"
+    narrator_day1 "讲义在开课前送回，课表上的地点也被重新核过。"
+    hide screen immersive_character
+    return
+
+label ch4_task_kong_seats:
+    $ immersive_pose = "calm"
+    show screen immersive_character
+    xu "祭器、匾额和居民平日使用之处不能随意搬。只使用两侧，长凳排紧一些。"
+    sy "课堂建立了，借用空间原有的秩序也要保留。"
+    $ day1_trust += 1
+    hide screen immersive_character
+    return
+
+label ch4_task_home_furniture:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    householder "家具不能乱搬。房屋只是暂借，不是赠予。"
+    xu "移动前记录位置，离开前恢复原状。我们写进借屋约定。"
+    hide screen immersive_character
+    return
+
+label ch4_task_home_water:
+    $ immersive_pose = "calm"
+    show screen immersive_character
+    householder "用水不能挤了老人和孩子。"
+    sy "学生分时取水，早晚各留一段给原住户。"
+    $ day1_trust += 1
+    hide screen immersive_character
+    return
+
+label ch4_task_home_rules:
+    $ immersive_pose = "determined"
+    show screen immersive_character
+    xu "清扫轮值、用水时段、夜间安静、禁止明火，离开前恢复原状。"
+    householder "既住了读书人，便算半间讲舍。莫使它失了体面。"
+    hide screen immersive_character
+    return
+
+label ch4_task_forest_water:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    administrator "宿舍灯油不足，饮水点太远，屋顶漏水，码头通道被木箱堵住。都急。"
+    sy "先把饮水时段与附近住户协调清楚，避免所有人同时拥到井边。"
+    hide screen immersive_character
+    return
+
+label ch4_task_forest_leak:
+    $ immersive_pose = "determined"
+    show screen immersive_character
+    gu "先用油布遮漏，再把课桌移开。彻底修屋顶来不及，但下午课不能中断。"
+    hide screen immersive_character
+    return
+
+label ch4_task_forest_lamp:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    menu:
+        "最后一桶灯油应该怎样分配？"
+        "留给方宅校务登记":
+            $ ch4_lamp_choice = "方宅"
+            $ day1_records += 2
+        "留给学生晚间自习":
+            $ ch4_lamp_choice = "学生"
+            $ day1_morale += 2
+        "两处分半夜，并亲自往返补救":
+            $ ch4_lamp_choice = "分半夜"
+            $ day1_trust += 1
+    xu "没有绝对无损的选择。被推迟的工作，明日要由我们亲手补上。"
+    hide screen immersive_character
+    return
+
+label ch4_task_pawn_beds:
+    $ immersive_pose = "calm"
+    show screen immersive_character
+    narrator_day1 "草席沿墙铺开，二年级学生的行李按名册排列。"
+    sy "铺位不只要够数，也要让夜间点名能找到每个人。"
+    hide screen immersive_character
+    return
+
+label ch4_task_pawn_storage:
+    $ immersive_pose = "determined"
+    show screen immersive_character
+    gu "柜台后存物资，外间住学生。寝铺与清点路线分开。"
+    hide screen immersive_character
+    return
+
+label ch4_task_pawn_passage:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    zhou "中间留得这么宽，会少铺好几个人。"
+    sy "拥挤免不了，但不能让拥挤成为警报时的危险。"
+    hide screen immersive_character
+    return
+
+label ch4_task_office_lodging:
+    $ immersive_pose = "thoughtful"
+    show screen immersive_character
+    administrator "尚有数人没有正式铺位，今晚暂住教室；两人发热，已送医查看。"
+    sy "把暂住、正式入住和送医分开写，不能用‘均已安顿’掩过去。"
+    hide screen immersive_character
+    return
+
+label ch4_task_office_schedule:
+    $ immersive_pose = "determined"
+    show screen immersive_character
+    xu "这是第四版课表。地点、时刻、教师、讲义送达情况都已重核。"
+    sy "一张课表若写得含糊，整座城都要替它付出脚程。"
+    $ day1_records += 1
+    hide screen immersive_character
+    return
+
+label ch4_task_office_report:
+    $ immersive_pose = "calm"
+    show screen immersive_character
+    zc "学校不能只问学生白日读什么，也要问他们夜里睡在何处。"
+    sy "房屋是散的，真的还能算一所大学吗？"
+    zc "房屋是散的，课表不能散。少接上一处，明日便有人无课可上。"
+    hide screen immersive_character
+    return
 
 
 label chapter_4_location_return:
-    if len(ch4_places) >= 6 and 4 not in day1_completed_chapters:
-        $ ch4_return_to_world_map = False
-        jump chapter_4_finish
+    if len(ch4_places) >= 6:
+        jump chapter_4_morning_check
     if ch4_return_to_world_map:
         $ ch4_return_to_world_map = False
         jump day1_map_hub
     jump chapter_4_hub
 
 
-label chapter_4_finish:
+label chapter_4_morning_check:
     scene bg ch4
-    $ immersive_pose = "relieved"
-    show screen immersive_character
-    narrator_day1 "数日后，孔庙里传出读书声，林场亮起办公灯，民居住进学生，码头上的木箱也有了去处。"
-    yq "我原以为你们只是在城里借几间房。"
-    sy "现在呢？"
-    yq "现在我觉得，你们是在把许多互不相干的地方，连成一所学校。"
-    sy "而且这所学校没有围墙。"
-    zc "没有围墙并不可怕。可怕的是人心先散了。"
-    sy "梅城只让我们停留四十五天，可在最初几天里，我们已经重新建立了一套生活。"
-    yq "你们很快还会走吗？"
-    sy "我不知道。"
-    yq "又是这句话。"
-    sy "但这次我知道，在离开之前，我们会继续上课。"
-    narrator_day1 "临时校园在整座梅城中展开，而新的警报声也越来越近。"
+    show screen immersive_hud
+    narrator_day1 "数日后清晨，我们沿课表完成四节点核验。"
+    narrator_day1 "07:40，孔庙：教师、黑板与讲义齐备。07:50，东门街：学生按正确木牌出发。"
+    narrator_day1 "08:00，严州中学第二部完成点名。08:10，方宅收到缺席与延误报告，最后断点被补上。"
+    zhou "上午八时，临时教室。我一个字也没认错吧？"
+    sy "一个字也没错。"
+    xu "不是‘总算’。是每个人把自己那一段接上了。"
+    sy "我曾以为大学必有一道校门。到了梅城才明白，它有时是许多人共同遵守的一张课表。"
+    jump chapter_4_finish
 
+
+label chapter_4_finish:
+    narrator_day1 "十二月中下旬，课表背面开始出现新的地名。"
+    xu "这张表才用了几日。"
+    gu "那便让它用到最后一日。教室照常开，船也照常装。"
+    narrator_day1 "白日维持课程，夜间清点图书仪器；借屋钥匙被归还，家具、房间与通道恢复原状。"
+    zhou "你们才把路认熟，为什么又要走？"
+    sy "因为路还没有走完。但在走之前，今日的课仍要准时开始。"
     $ day1_finish_chapter(4)
-    call immersive_hide from _call_immersive_hide_2
-    centered "{size=44}第四章完成{/size}\n“黑板挂在我的胸前”已解锁"
+    hide screen immersive_hud
+    centered "{size=46}第四章完成{/size}\n\n第五章　“黑板挂在我的胸前”已解锁"
     jump day1_map_hub

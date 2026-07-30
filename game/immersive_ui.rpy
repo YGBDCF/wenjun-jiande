@@ -28,20 +28,32 @@ init python:
     def immersive_close():
         store.immersive_active = False
 
+# 第二至第六章共用的人物站位。
+# 该变换独立于第一章，避免后续章节引用已删除的第一章表情变换。
+transform immersive_portrait:
+    xpos 45
+    yalign 1.0
+    zoom 1.45
+    alpha 0.0
+    linear 0.22 alpha 1.0
+    linear 2.5 yoffset -3
+    linear 2.5 yoffset 0
+    repeat
+
 screen immersive_character():
     zorder 5
     if immersive_pose == "thoughtful":
-        add "shenyan thoughtful" at ch1_portrait_thoughtful
+        add "shenyan thoughtful" at immersive_portrait
     elif immersive_pose == "tense":
-        add "shenyan tense" at ch1_portrait_tense
+        add "shenyan tense" at immersive_portrait
     elif immersive_pose == "determined":
-        add "shenyan determined" at ch1_portrait_calm
+        add "shenyan determined" at immersive_portrait
     elif immersive_pose == "worried":
-        add "shenyan worried" at ch1_portrait_tense
+        add "shenyan worried" at immersive_portrait
     elif immersive_pose == "relieved":
-        add "shenyan relieved" at ch1_portrait_calm
+        add "shenyan relieved" at immersive_portrait
     else:
-        add "shenyan calm" at ch1_portrait_calm
+        add "shenyan calm" at immersive_portrait
 
 screen immersive_hud():
     zorder 30

@@ -80,11 +80,8 @@ image ch6 press:
 
 
 label start:
-    scene black
-    with fade
-
-    centered "{size=58}文军长征：建德四十五日{/size}\n\n{size=32}六章扩写版 · v0.2{/size}"
-    pause 1.0
+    $ opening_card = renpy.random.choice(OPENING_HISTORY_CARDS)
+    call screen opening_history_card(opening_card[0], opening_card[1], opening_card[2])
     jump day1_map_hub
 
 
@@ -96,6 +93,9 @@ label day1_map_hub:
     $ immersive_active = False
     call screen day1_chapter_map
     $ selected_chapter = _return
+
+    if selected_chapter == "meicheng_town":
+        jump meicheng_town_hub
 
     if isinstance(selected_chapter, str) and selected_chapter.startswith("meicheng:"):
         $ selected_place = selected_chapter.split(":", 1)[1]

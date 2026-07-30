@@ -35,10 +35,12 @@ init python:
             )
 
     def day1_meicheng_unlocked(location_id):
-        if location_id in ("kongmiao", "minju"):
+        if location_id == "dock":
             return True
+        if location_id in ("kongmiao", "minju"):
+            return "dock" in store.ch4_places
         if location_id in ("linchang", "pawnshop"):
             return "kongmiao" in store.ch4_places and "minju" in store.ch4_places
-        if location_id in ("office", "dock"):
+        if location_id == "office":
             return "linchang" in store.ch4_places and "pawnshop" in store.ch4_places
         return False

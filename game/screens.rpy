@@ -404,28 +404,102 @@ style navigation_button_text:
 
 screen main_menu():
 
-    ## 此语句可确保替换掉任何其他菜单屏幕。
     tag menu
 
-    add gui.main_menu_background
+    add gui.main_menu_background:
+        xysize (1920, 1080)
 
-    ## 此空框可使标题菜单变暗。
+    # 左侧暗幕与远景自然融合，所有文字均由 Ren'Py 动态绘制。
     frame:
-        style "main_menu_frame"
-
-    ## use 语句将其他的屏幕包含进此屏幕。标题屏幕的实际内容在导航屏幕中。
-    use navigation
-
-    if gui.show_name:
+        xpos 0
+        ypos 0
+        xsize 650
+        ysize 1080
+        background Solid("#070b0dd9")
+        padding (72, 72, 58, 58)
 
         vbox:
-            style "main_menu_vbox"
+            spacing 10
 
-            text "[config.name!t]":
-                style "main_menu_title"
+            text "负笈西行":
+                size 88
+                color "#ead6a0"
+                outlines [(2, "#17130c", 0, 0)]
 
-            text "[config.version]":
-                style "main_menu_version"
+            text "文军长征：建德四十五日":
+                size 32
+                color "#d0bc88"
+
+            text "1937年  浙江大学西迁历史叙事":
+                size 21
+                color "#aeb7b3"
+
+            null height 22
+
+            frame:
+                xsize 455
+                ysize 2
+                background Solid("#a88442aa")
+
+            null height 72
+
+            textbutton "开始旅程":
+                style "main_cover_button"
+                action Start()
+
+            textbutton "读取进度":
+                style "main_cover_button"
+                action ShowMenu("load")
+
+            textbutton "历史档案":
+                style "main_cover_button"
+                action ShowMenu("history")
+
+            textbutton "设置":
+                style "main_cover_button"
+                action ShowMenu("preferences")
+
+            textbutton "关于作品":
+                style "main_cover_button"
+                action ShowMenu("about")
+
+            if renpy.variant("pc"):
+                textbutton "退出":
+                    style "main_cover_button"
+                    action Quit(confirm=False)
+
+            null height 42
+
+            text "书籍可以装箱，课堂可以迁移。":
+                size 22
+                color "#d8c9a5"
+
+            text "求是之心，随师生一同西行。":
+                size 22
+                color "#aeb7b3"
+
+    text "依据浙江大学西迁史实创作":
+        xpos 1500
+        ypos 1015
+        size 18
+        color "#d7d1c3aa"
+        outlines [(2, "#0a0d0f", 0, 0)]
+
+
+style main_cover_button is button:
+    xsize 410
+    ysize 62
+    background Solid("#11191bcc")
+    hover_background Solid("#6b5027dd")
+    selected_background Solid("#6b5027dd")
+    padding (24, 13)
+
+style main_cover_button_text is button_text:
+    size 27
+    color "#ded5bf"
+    hover_color "#ffe5a2"
+    selected_color "#ffe5a2"
+    xalign 0.0
 
 
 style main_menu_frame is empty

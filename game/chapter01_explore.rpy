@@ -232,35 +232,36 @@ screen ch1_hud():
 screen ch1_task_board():
     modal True
     add CH1_STAGE_META[ch1_stage][2]
-    add Solid("#07101245")
 
-    frame:
+    vbox:
         xpos 48
         ypos 42
-        xsize 610
-        ysize 132
-        background Solid("#0c1516e8")
-        padding (26, 18)
-        vbox:
-            text "[ch1_stage_title]" size 36 color "#ead49e"
-            text "点击场景标记完成待办；探索界面不会显示人物。" size 18 color "#d9ddda"
+        spacing 4
+        text "[ch1_stage_title]":
+            size 36
+            color "#ead49e"
+            outlines [(3, "#11130f", 0, 0)]
+        text "点击场景标记完成待办；探索界面不会显示人物。":
+            size 18
+            color "#e1ddd1"
+            outlines [(2, "#11130f", 0, 0)]
 
     for task_id, task_name, flag_name, position in CH1_STAGE_TASKS[ch1_stage]:
         $ task_done = getattr(store, flag_name)
         button:
             xpos position[0]
             ypos position[1]
-            xsize 285
-            ysize 120
-            background Solid("#131b1bd8")
-            hover_background Solid("#6f552ecf")
+            xsize 250
+            ysize 88
+            background Solid("#694820df")
+            hover_background Solid("#8a642ce8")
             action Return(task_id)
             vbox:
                 xalign 0.5
                 yalign 0.5
-                spacing 6
-                text task_name size 25 color "#f0e6cf" xalign 0.5
-                text ("已完成" if task_done else "点击调查") size 17 color ("#b9d49e" if task_done else "#d7bc82") xalign 0.5
+                spacing 2
+                text task_name size 21 color "#f0e6cf" xalign 0.5
+                text ("已完成" if task_done else "点击调查") size 15 color ("#b9d49e" if task_done else "#ead095") xalign 0.5
 
     if ch1_stage_complete(ch1_stage):
         textbutton "继续本幕":
@@ -315,11 +316,14 @@ label ch1_start:
     $ ch1_s6_headcount = False
     $ ch1_s6_notes = False
 
-    call ch1_set_stage(1, "完成报到，并协助新生安置行李")
-    scene black
-    with fade
-    centered "{size=58}第一章  西天目山{/size}\n\n{size=31}寺庙里的大学{/size}\n\n{size=22}1937年9月21日  禅源寺{/size}"
-    pause 1.5
+    call ch1_set_stage(1, "完成报到，并协助新生安置行李") from _call_ch1_set_stage
+    call screen chapter_title_card(
+        "images/chapter01/backgrounds/temple_courtyard_rain.png",
+        "第一章",
+        "西天目山",
+        "寺庙里的大学",
+        "1937年9月21日  禅源寺"
+    )
 
     scene ch1 gate
     with dissolve
@@ -407,7 +411,7 @@ label ch1_event_end:
 
 # 第一幕：雨中山门
 label ch1_task_1_register:
-    call ch1_event_begin("ch1 gate", "ch1 shen_recording")
+    call ch1_event_begin("ch1 gate", "ch1 shen_recording") from _call_ch1_event_begin
     if ch1_s1_register:
         ch1_shen "姓名、籍贯与住宿位置都已核过。我的名字旁有一枚新落下的墨点。"
         jump ch1_event_end
@@ -422,7 +426,7 @@ label ch1_task_1_register:
     jump ch1_event_end
 
 label ch1_task_1_luggage:
-    call ch1_event_begin("ch1 gate", "ch1 xu_repairing")
+    call ch1_event_begin("ch1 gate", "ch1 xu_repairing") from _call_ch1_event_begin_1
     if ch1_s1_luggage:
         ch1_xu "三位同学的行李都已离开石阶。下雨时，这条路必须一直能走。"
         jump ch1_event_end
@@ -435,7 +439,7 @@ label ch1_task_1_luggage:
     jump ch1_event_end
 
 label ch1_task_1_notices:
-    call ch1_event_begin("ch1 gate", "ch1 xu_checking")
+    call ch1_event_begin("ch1 gate", "ch1 xu_checking") from _call_ch1_event_begin_2
     if ch1_s1_notices:
         ch1_xu "课表、住宿名册与临时校牌的位置都已记下。"
         jump ch1_event_end
@@ -451,7 +455,7 @@ label ch1_task_1_notices:
 
 # 第二幕：寺院与学堂
 label ch1_scene2_open:
-    call ch1_set_stage(2, "在不扰乱寺院秩序的前提下划分临时校园")
+    call ch1_set_stage(2, "在不扰乱寺院秩序的前提下划分临时校园") from _call_ch1_set_stage_1
     scene ch1 courtyard
     with fade
     show screen ch1_hud
@@ -469,7 +473,7 @@ label ch1_scene2_open:
     jump ch1_stage_hub
 
 label ch1_task_2_dorm:
-    call ch1_event_begin("ch1 dormitory", "ch1 xu_checking")
+    call ch1_event_begin("ch1 dormitory", "ch1 xu_checking") from _call_ch1_event_begin_3
     if ch1_s2_dorm:
         ch1_xu "铺位、用水时段与夜间出口都已写在门边。"
         jump ch1_event_end
@@ -480,7 +484,7 @@ label ch1_task_2_dorm:
     jump ch1_event_end
 
 label ch1_task_2_classroom:
-    call ch1_event_begin("ch1 courtyard", "ch1 miaoding_calm")
+    call ch1_event_begin("ch1 courtyard", "ch1 miaoding_calm") from _call_ch1_event_begin_4
     if ch1_s2_classroom:
         ch1_miaoding "西廊的桌凳不会影响早晚课，安排妥当。"
         jump ch1_event_end
@@ -491,7 +495,7 @@ label ch1_task_2_classroom:
     jump ch1_event_end
 
 label ch1_task_2_study:
-    call ch1_event_begin("ch1 courtyard", "ch1 xu_firm")
+    call ch1_event_begin("ch1 courtyard", "ch1 xu_firm") from _call_ch1_event_begin_5
     if ch1_s2_study:
         ch1_xu "自习处已移到西厢，避开正殿早晚功课。"
         jump ch1_event_end
@@ -503,7 +507,7 @@ label ch1_task_2_study:
     jump ch1_event_end
 
 label ch1_task_2_passage:
-    call ch1_event_begin("ch1 courtyard", "ch1 shen_alert")
+    call ch1_event_begin("ch1 courtyard", "ch1 shen_alert") from _call_ch1_event_begin_6
     if ch1_s2_passage:
         ch1_shen "木箱已贴墙放稳，山门到厢房的公共通道保持畅通。"
         jump ch1_event_end
@@ -519,7 +523,7 @@ label ch1_task_2_passage:
 
 # 第三幕：九月二十七日
 label ch1_scene3_open:
-    call ch1_set_stage(3, "在第一堂课开始前完成临时教室准备")
+    call ch1_set_stage(3, "在第一堂课开始前完成临时教室准备") from _call_ch1_set_stage_2
     scene ch1 classroom
     with fade
     show screen ch1_hud
@@ -535,7 +539,7 @@ label ch1_scene3_open:
     jump ch1_stage_hub
 
 label ch1_task_3_desks:
-    call ch1_event_begin("ch1 classroom", "ch1 xu_repairing")
+    call ch1_event_begin("ch1 classroom", "ch1 xu_repairing") from _call_ch1_event_begin_7
     if ch1_s3_desks:
         ch1_xu "两张桌子都已垫稳，写字时不会再晃。"
         jump ch1_event_end
@@ -545,7 +549,7 @@ label ch1_task_3_desks:
     jump ch1_event_end
 
 label ch1_task_3_blackboard:
-    call ch1_event_begin("ch1 classroom", "ch1 shen_alert")
+    call ch1_event_begin("ch1 classroom", "ch1 shen_alert") from _call_ch1_event_begin_8
     if ch1_s3_blackboard:
         ch1_shen "黑板已用绳索固定在木架上，没有钉伤寺院墙面。"
         jump ch1_event_end
@@ -556,7 +560,7 @@ label ch1_task_3_blackboard:
     jump ch1_event_end
 
 label ch1_task_3_window:
-    call ch1_event_begin("ch1 classroom", "ch1 xu_checking")
+    call ch1_event_begin("ch1 classroom", "ch1 xu_checking") from _call_ch1_event_begin_9
     if ch1_s3_window:
         ch1_xu "迎风窗已合到一半，雨进不来，桌面仍有足够光线。"
         jump ch1_event_end
@@ -566,7 +570,7 @@ label ch1_task_3_window:
     jump ch1_event_end
 
 label ch1_task_3_books:
-    call ch1_event_begin("ch1 classroom", "ch1 shen_recording")
+    call ch1_event_begin("ch1 classroom", "ch1 shen_recording") from _call_ch1_event_begin_10
     if ch1_s3_books:
         ch1_shen "教材箱已移到侧墙，后门与通道都空出来了。"
         jump ch1_event_end
@@ -600,7 +604,7 @@ label ch1_scene3_class:
 
 # 第四幕：导师名簿
 label ch1_scene4_open:
-    call ch1_set_stage(4, "协助导师把学生的生活困难记录清楚")
+    call ch1_set_stage(4, "协助导师把学生的生活困难记录清楚") from _call_ch1_set_stage_3
     scene ch1 mentor_room
     with fade
     show screen ch1_hud
@@ -616,7 +620,7 @@ label ch1_scene4_open:
     jump ch1_stage_hub
 
 label ch1_task_4_roll:
-    call ch1_event_begin("ch1 mentor_room", "ch1 shen_recording")
+    call ch1_event_begin("ch1 mentor_room", "ch1 shen_recording") from _call_ch1_event_begin_11
     if ch1_s4_roll:
         ch1_shen "住宿、家信与鞋袜情况已逐项核对，没有只写一个模糊的‘困难’。"
         jump ch1_event_end
@@ -627,7 +631,7 @@ label ch1_task_4_roll:
     jump ch1_event_end
 
 label ch1_task_4_health:
-    call ch1_event_begin("ch1 mentor_room", "ch1 mentor_recording")
+    call ch1_event_begin("ch1 mentor_room", "ch1 mentor_recording") from _call_ch1_event_begin_12
     if ch1_s4_health:
         ch1_tutor "夜咳的两名学生已安排复查，暂不与普通缺被混在一栏。"
         jump ch1_event_end
@@ -638,7 +642,7 @@ label ch1_task_4_health:
     jump ch1_event_end
 
 label ch1_task_4_supplies:
-    call ch1_event_begin("ch1 mentor_room", "ch1 xu_checking")
+    call ch1_event_begin("ch1 mentor_room", "ch1 xu_checking") from _call_ch1_event_begin_13
     if ch1_s4_supplies:
         ch1_xu "厚被、鞋袜与修锁用具已经分开登记，能借的先借，需购的再报。"
         jump ch1_event_end
@@ -685,7 +689,7 @@ label ch1_scene4_review:
 
 # 第五幕：迟到的家书
 label ch1_scene5_open:
-    call ch1_set_stage(5, "领取邮件，并维持灯下自习的日常")
+    call ch1_set_stage(5, "领取邮件，并维持灯下自习的日常") from _call_ch1_set_stage_4
     scene ch1 mail_corridor
     with fade
     show screen ch1_hud
@@ -700,7 +704,7 @@ label ch1_scene5_open:
     jump ch1_stage_hub
 
 label ch1_task_5_mail:
-    call ch1_event_begin("ch1 mail_corridor", "ch1 shen_sad_letter")
+    call ch1_event_begin("ch1 mail_corridor", "ch1 shen_sad_letter") from _call_ch1_event_begin_14
     if ch1_s5_mail:
         ch1_shen "已领取的信件均按姓名登记，未到的没有擅自写成坏消息。"
         jump ch1_event_end
@@ -711,7 +715,7 @@ label ch1_task_5_mail:
     jump ch1_event_end
 
 label ch1_task_5_table:
-    call ch1_event_begin("ch1 mail_corridor", "ch1 xu_soft")
+    call ch1_event_begin("ch1 mail_corridor", "ch1 xu_soft") from _call_ch1_event_begin_15
     if ch1_s5_table:
         ch1_xu "桌子已经抬到灯下。今晚仍可按原定时间自习。"
         jump ch1_event_end
@@ -723,7 +727,7 @@ label ch1_task_5_table:
     jump ch1_event_end
 
 label ch1_task_5_lamp:
-    call ch1_event_begin("ch1 mail_corridor", "ch1 shen_recording")
+    call ch1_event_begin("ch1 mail_corridor", "ch1 shen_recording") from _call_ch1_event_begin_16
     if ch1_s5_lamp:
         ch1_shen "风灯、灭火砂与最后离开者的名字都已安排。"
         jump ch1_event_end
@@ -768,7 +772,7 @@ label ch1_scene5_choice:
 
 # 第六幕：把课表折起来
 label ch1_scene6_open:
-    call ch1_set_stage(6, "恢复寺院原貌，清点师生并封装课程记录")
+    call ch1_set_stage(6, "恢复寺院原貌，清点师生并封装课程记录") from _call_ch1_set_stage_5
     scene ch1 departure
     with fade
     show screen ch1_hud
@@ -786,7 +790,7 @@ label ch1_scene6_open:
     jump ch1_stage_hub
 
 label ch1_task_6_return:
-    call ch1_event_begin("ch1 departure", "ch1 xu_firm")
+    call ch1_event_begin("ch1 departure", "ch1 xu_firm") from _call_ch1_event_begin_17
     if ch1_s6_return:
         ch1_xu "风灯、桌凳与铺板都已按寺方清单归还。"
         jump ch1_event_end
@@ -796,7 +800,7 @@ label ch1_task_6_return:
     jump ch1_event_end
 
 label ch1_task_6_board:
-    call ch1_event_begin("ch1 departure", "ch1 shen_recording")
+    call ch1_event_begin("ch1 departure", "ch1 shen_recording") from _call_ch1_event_begin_18
     if ch1_s6_board:
         ch1_shen "黑板已擦净，最后一道题另抄进笔记，没有损坏寺院墙面。"
         jump ch1_event_end
@@ -807,7 +811,7 @@ label ch1_task_6_board:
     jump ch1_event_end
 
 label ch1_task_6_headcount:
-    call ch1_event_begin("ch1 departure", "ch1 shen_alert")
+    call ch1_event_begin("ch1 departure", "ch1 shen_alert") from _call_ch1_event_begin_19
     if ch1_s6_headcount:
         ch1_shen "约二百五十名新生按组核点，人员、书箱与铺盖都已对应。"
         jump ch1_event_end
@@ -818,7 +822,7 @@ label ch1_task_6_headcount:
     jump ch1_event_end
 
 label ch1_task_6_notes:
-    call ch1_event_begin("ch1 departure", "ch1 xu_departing")
+    call ch1_event_begin("ch1 departure", "ch1 xu_departing") from _call_ch1_event_begin_20
     if ch1_s6_notes:
         ch1_xu "课表、导师名簿摘记与个人笔记均已包好，箱外标明防水。"
         jump ch1_event_end

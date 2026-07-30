@@ -134,10 +134,13 @@ label chapter_2:
     $ ch2_accuracy = 0
     $ immersive_items = ["顾明川的水损清单"]
     $ immersive_archive_count = 1
-    scene black
-    with fade
-    centered "{size=58}第二章　江干码头{/size}\n\n{size=32}把一所大学装上船{/size}\n\n{size=22}1937年11月　杭州至建德{/size}"
-    pause 1.4
+    call screen chapter_title_card(
+        "images/chapter02/scenes/jianggan_loading.png",
+        "第二章",
+        "江干码头",
+        "把一所大学装上船",
+        "1937年11月  杭州至建德"
+    )
     jump ch2_scene_hub
 
 
@@ -162,7 +165,7 @@ label ch2_scene_hub:
             jump ch2_scene_hub
         jump ch2_ending
 
-    call expression "ch2_task_" + ch2_selected
+    call expression "ch2_task_" + ch2_selected from _call_expression
     if ch2_selected not in ch2_scene_tasks:
         $ ch2_scene_tasks.append(ch2_selected)
     jump ch2_scene_hub

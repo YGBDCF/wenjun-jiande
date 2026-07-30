@@ -1,0 +1,462 @@
+# ================================================================
+# 45日主循环状态与流程
+# ================================================================
+
+default mc45_started = False
+default mc45_finished = False
+default mc45_day = 1
+default mc45_time = 0
+default mc45_weather = "江雾"
+default mc45_event_history = []
+default mc45_anchor_seen = []
+default mc45_archive = []
+default mc45_items = ["蓝布笔记本", "学生证", "家书", "断页"]
+default mc45_journal = []
+
+default mc45_knowledge = 2
+default mc45_practice = 1
+default mc45_reputation = 0
+default mc45_will = 2
+default mc45_truth = 1
+
+default mc45_stamina = 6
+default mc45_health = 92
+default mc45_warmth = 1
+default mc45_paper = 4
+default mc45_money = 3
+default mc45_materials = 1
+
+default mc45_school_order = 2
+default mc45_material_integrity = 2
+default mc45_resident_trust = 1
+default mc45_information_credit = 1
+default mc45_morale = 2
+default mc45_departure_readiness = 0
+
+default mc45_selected_place = "dock"
+default mc45_last_result = ""
+
+
+init python:
+    def mc45_apply_choice(choice_id):
+        store.mc45_stamina = max(0, store.mc45_stamina - 1)
+        if choice_id == "practice":
+            store.mc45_practice += 1
+            store.mc45_school_order += 1
+            store.mc45_last_result = "你亲手解决了眼前的问题，校舍秩序有所改善。"
+        elif choice_id == "verify":
+            store.mc45_knowledge += 1
+            store.mc45_truth += 1
+            store.mc45_information_credit += 1
+            store.mc45_last_result = "你保留了不同记录，并标明仍待核实之处。"
+        else:
+            store.mc45_reputation += 1
+            store.mc45_resident_trust += 1
+            store.mc45_last_result = "你先照料了具体的人，这份体谅被记住了。"
+
+    def mc45_night_settlement():
+        cold = store.mc45_weather in ("北风", "寒潮", "霜冻", "雨夹雪", "冻雨")
+        if cold and store.mc45_warmth < 2:
+            store.mc45_health = max(0, store.mc45_health - 3)
+        elif store.mc45_health < 100:
+            store.mc45_health = min(100, store.mc45_health + 1)
+        store.mc45_stamina = 6 if store.mc45_health >= 70 else 5
+        if store.mc45_day >= 31:
+            store.mc45_departure_readiness += 1
+        info = mc45_info(store.mc45_day)
+        store.mc45_journal.append((store.mc45_day, info[0], info[2], store.mc45_weather))
+
+
+screen mc45_world_map():
+    modal True
+    $ day_info = mc45_info(mc45_day)
+    $ time_name = MC45_TIME_NAMES[mc45_time]
+
+    add "images/meicheng_town/meicheng_town_base_v1.png":
+        xysize (1920, 1080)
+    add Solid(MC45_TIME_TINTS[mc45_time])
+
+    frame:
+        xpos 30
+        ypos 24
+        xsize 820
+        ysize 112
+        background Solid("#10140ed9")
+        padding (24, 12)
+        vbox:
+            spacing 2
+            text "建德梅城  第[mc45_day]日  [day_info[0]]  [time_name]":
+                size 29
+                color "#ead39a"
+            text "[day_info[1]]阶段 · [mc45_weather] · 今日：[day_info[2]]":
+                size 19
+                color "#c7c1b2"
+
+    frame:
+        xpos 870
+        ypos 24
+        xsize 1015
+        ysize 112
+        background Solid("#10140ed9")
+        padding (20, 12)
+        hbox:
+            spacing 22
+            text "体力 [mc45_stamina]/6" size 19 color "#d7c894"
+            text "健康 [mc45_health]" size 19 color "#d7c894"
+            text "保暖 [mc45_warmth]" size 19 color "#d7c894"
+            text "纸墨 [mc45_paper]" size 19 color "#d7c894"
+            text "学识 [mc45_knowledge]" size 19 color "#bfc5b5"
+            text "实务 [mc45_practice]" size 19 color "#bfc5b5"
+            text "人望 [mc45_reputation]" size 19 color "#bfc5b5"
+
+    for place_id, meta in MC45_LOCATION_META.items():
+        $ place_name, place_bg, rect = meta
+        $ px, py, pw, ph = rect
+        $ residence_open = (place_id != "zhu_residence" or mc45_day >= 3)
+        $ can_enter = mc45_time < 3 and mc45_stamina > 0 and residence_open
+        button:
+            xpos px
+            ypos py
+            xsize pw
+            ysize ph
+            background Solid("#00000000")
+            hover_background (Solid("#d3a64b20") if can_enter else Solid("#00000000"))
+            action (Return(place_id) if can_enter else NullAction())
+            frame:
+                xalign 0.5
+                yalign 1.0
+                xsize min(pw - 20, 290)
+                ysize 68
+                background Solid("#11140edc")
+                padding (8, 5)
+                vbox:
+                    xalign 0.5
+                    text place_name:
+                        xalign 0.5
+                        size 23
+                        color ("#ead39a" if can_enter else "#99958a")
+                    if not residence_open:
+                        text "第3日后开放" xalign 0.5 size 14 color "#9a9281"
+                    elif mc45_time == 3:
+                        text "深夜不可行动" xalign 0.5 size 14 color "#9a9281"
+                    elif mc45_stamina <= 0:
+                        text "体力不足" xalign 0.5 size 14 color "#9a9281"
+                    else:
+                        text "点击进入" xalign 0.5 size 14 color "#c1b89f"
+
+    frame:
+        xpos 1395
+        ypos 150
+        xsize 490
+        ysize 405
+        background Solid("#11140ee8")
+        padding (24, 18)
+        vbox:
+            spacing 8
+            text "今日主题" size 24 color "#e5ca8c"
+            text day_info[2] size 29 color "#eee3c9"
+            text day_info[3] size 19 color "#c9c4b7" xmaximum 430 line_spacing 5
+            null height 6
+            text "今日标志物" size 20 color "#e5ca8c"
+            text day_info[4] size 23 color "#d9d3c5"
+            null height 6
+            text "行动规则" size 20 color "#e5ca8c"
+            text "早晨、午间、傍晚各行动一次；深夜必须返回学生宿舍结算。" size 17 color "#aaa79e" xmaximum 430 line_spacing 4
+
+    if mc45_time == 3:
+        frame:
+            xpos 560
+            ypos 720
+            xsize 800
+            ysize 180
+            background Solid("#11151aeb")
+            padding (30, 18)
+            vbox:
+                xalign 0.5
+                spacing 12
+                text "夜色已深，地图停止行动。":
+                    xalign 0.5
+                    size 28
+                    color "#e6d6ad"
+                text "回到学生宿舍，整理记录并结算今日状态。":
+                    xalign 0.5
+                    size 19
+                    color "#bbb7ad"
+                textbutton "夜归宿舍":
+                    xalign 0.5
+                    xsize 300
+                    ysize 56
+                    text_size 22
+                    text_color "#ead39a"
+                    text_hover_color "#fff0bd"
+                    background Solid("#3b301fe8")
+                    hover_background Solid("#5a4628ee")
+                    action Return("night")
+
+    frame:
+        xpos 30
+        ypos 1000
+        xsize 650
+        ysize 55
+        background Solid("#11140edc")
+        hbox:
+            xalign 0.5
+            yalign 0.5
+            spacing 28
+            textbutton "返回六章地图":
+                text_size 18
+                text_color "#d6c69c"
+                text_hover_color "#ffe5a5"
+                action Return("world")
+            text "档案 [len(mc45_archive)]" size 17 color "#aaa598" yalign 0.5
+            text "行动记录 [len(mc45_event_history)]" size 17 color "#aaa598" yalign 0.5
+
+
+screen mc45_event_scene(place_id, event_title, event_text, is_anchor=False):
+    modal True
+    $ place_name, place_bg, rect = MC45_LOCATION_META[place_id]
+    $ pose_path = renpy.random.choice((
+        "images/chapter01/characters/shenyan_calm.png",
+        "images/chapter01/characters/shenyan_thoughtful.png",
+        "images/chapter01/characters/shenyan_determined.png",
+        "images/chapter01/characters/shenyan_worried.png",
+    ))
+
+    add place_bg:
+        xysize (1920, 1080)
+    add Solid(MC45_TIME_TINTS[mc45_time])
+
+    add Transform(pose_path, xysize=(510, 880), fit="contain"):
+        xpos 28
+        yalign 1.0
+
+    frame:
+        xpos 32
+        ypos 28
+        xsize 830
+        ysize 98
+        background Solid("#10140ed0")
+        padding (23, 11)
+        vbox:
+            text "[place_name] · [MC45_TIME_NAMES[mc45_time]] · [mc45_weather]" size 26 color "#e9d39a"
+            text ("今日固定事件" if is_anchor else "地点事件") size 16 color "#aaa79c"
+
+    frame:
+        xpos 405
+        ypos 655
+        xsize 1215
+        ysize 350
+        background Solid("#151710ef")
+        padding (38, 25)
+        vbox:
+            spacing 8
+            text event_title size 35 color "#edd69d"
+            frame:
+                xsize 1110
+                ysize 2
+                background Solid("#98743eaa")
+            text event_text:
+                size 24
+                color "#e7e2d6"
+                xmaximum 1120
+                line_spacing 7
+            null height 4
+            hbox:
+                spacing 18
+                textbutton "动手解决":
+                    xsize 340
+                    ysize 63
+                    text_size 21
+                    text_color "#ead39a"
+                    text_hover_color "#fff0bd"
+                    background Solid("#283026e8")
+                    hover_background Solid("#4d3c22ef")
+                    action Return("practice")
+                textbutton "核对记录":
+                    xsize 340
+                    ysize 63
+                    text_size 21
+                    text_color "#ead39a"
+                    text_hover_color "#fff0bd"
+                    background Solid("#283026e8")
+                    hover_background Solid("#4d3c22ef")
+                    action Return("verify")
+                textbutton "先照料人":
+                    xsize 340
+                    ysize 63
+                    text_size 21
+                    text_color "#ead39a"
+                    text_hover_color "#fff0bd"
+                    background Solid("#283026e8")
+                    hover_background Solid("#4d3c22ef")
+                    action Return("care")
+
+    frame:
+        xpos 1645
+        ypos 145
+        xsize 240
+        ysize 420
+        background Solid("#11140ee5")
+        padding (17, 15)
+        vbox:
+            spacing 7
+            text "当前状态" size 22 color "#e3ca8c"
+            text "体力 [mc45_stamina]/6" size 18 color "#d6d0bf"
+            text "学识 [mc45_knowledge]" size 18 color "#d6d0bf"
+            text "实务 [mc45_practice]" size 18 color "#d6d0bf"
+            text "人望 [mc45_reputation]" size 18 color "#d6d0bf"
+            text "心志 [mc45_will]" size 18 color "#d6d0bf"
+            null height 8
+            text "世界状态" size 22 color "#e3ca8c"
+            text "校舍秩序 [mc45_school_order]" size 17 color "#aaa79d"
+            text "居民信任 [mc45_resident_trust]" size 17 color "#aaa79d"
+            text "信息公信 [mc45_information_credit]" size 17 color "#aaa79d"
+
+
+screen mc45_result_card():
+    modal True
+    add MC45_LOCATION_META[mc45_selected_place][1]:
+        xysize (1920, 1080)
+    add Solid("#07100c62")
+    frame:
+        xalign 0.5
+        yalign 0.78
+        xsize 1050
+        ysize 205
+        background Solid("#151710ee")
+        padding (35, 24)
+        vbox:
+            xalign 0.5
+            spacing 15
+            text mc45_last_result:
+                xalign 0.5
+                text_align 0.5
+                size 25
+                color "#e7ddc7"
+                xmaximum 940
+            textbutton "返回梅城地图":
+                xalign 0.5
+                xsize 300
+                ysize 55
+                text_size 21
+                text_color "#e8d19a"
+                text_hover_color "#fff0bd"
+                background Solid("#3b301fe8")
+                hover_background Solid("#5a4628ee")
+                action Return()
+
+
+screen mc45_deep_night():
+    modal True
+    $ info = mc45_info(mc45_day)
+    add "images/chapter01/backgrounds/dormitory_rain.png":
+        xysize (1920, 1080)
+    add Solid("#07142682")
+    frame:
+        xpos 170
+        ypos 135
+        xsize 1580
+        ysize 760
+        background Solid("#11140eea")
+        padding (48, 35)
+        hbox:
+            spacing 45
+            vbox:
+                xsize 920
+                spacing 12
+                text "深夜札记  第[mc45_day]日" size 34 color "#ead39a"
+                text "[info[0]] · [mc45_weather]" size 20 color "#aaa79c"
+                frame:
+                    xsize 880
+                    ysize 2
+                    background Solid("#98743eaa")
+                text "今日：[info[2]]" size 27 color "#e7e0d0"
+                text "沈砚舟把事实、猜测和仍待核实的部分分开写下。窗外的风雨没有停，隔壁铺位已经熄灯。" size 22 color "#c9c5ba" xmaximum 860 line_spacing 7
+                if mc45_last_result:
+                    text "最后一笔：[mc45_last_result]" size 19 color "#aaa79d" xmaximum 860 line_spacing 5
+            vbox:
+                xsize 500
+                spacing 10
+                text "夜间结算" size 28 color "#ead39a"
+                text "健康 [mc45_health]" size 21 color "#d7d0bf"
+                text "保暖 [mc45_warmth]" size 21 color "#d7d0bf"
+                text "师生士气 [mc45_morale]" size 21 color "#d7d0bf"
+                text "迁移准备 [mc45_departure_readiness]" size 21 color "#d7d0bf"
+                null height 20
+                textbutton ("进入下一日" if mc45_day < 45 else "结束建德篇"):
+                    xsize 380
+                    ysize 65
+                    text_size 23
+                    text_color "#ead39a"
+                    text_hover_color "#fff0bd"
+                    background Solid("#3b301fe8")
+                    hover_background Solid("#5a4628ee")
+                    action Return()
+
+
+label meicheng_town_hub:
+    hide screen immersive_character
+    hide screen immersive_hud
+    hide screen ch1_character
+    hide screen ch1_hud
+    $ immersive_active = False
+
+    if 4 not in day1_completed_chapters:
+        jump day1_map_hub
+
+    if not mc45_started:
+        $ mc45_started = True
+        $ mc45_day = 1
+        $ mc45_time = 0
+        $ mc45_weather = "江雾"
+
+    call screen mc45_world_map
+    $ mc45_selection = _return
+
+    if mc45_selection == "world":
+        jump day1_map_hub
+    if mc45_selection == "night":
+        jump mc45_night_return
+
+    $ mc45_selected_place = mc45_selection
+    jump mc45_run_interaction
+
+
+label mc45_run_interaction:
+    $ info = mc45_info(mc45_day)
+    $ is_anchor = mc45_day not in mc45_anchor_seen
+    if is_anchor:
+        $ event_title = info[2]
+        $ event_text = info[3]
+    else:
+        $ event_title, event_text = mc45_pick_location_event(mc45_selected_place, mc45_day, mc45_event_history)
+
+    call screen mc45_event_scene(mc45_selected_place, event_title, event_text, is_anchor)
+    $ event_choice = _return
+    $ mc45_apply_choice(event_choice)
+
+    if is_anchor:
+        $ mc45_anchor_seen.append(mc45_day)
+        if info[4] not in mc45_items:
+            $ mc45_items.append(info[4])
+        if mc45_day in MC45_ARCHIVE_FACTS and MC45_ARCHIVE_FACTS[mc45_day] not in mc45_archive:
+            $ mc45_archive.append(MC45_ARCHIVE_FACTS[mc45_day])
+
+    $ mc45_event_history.append((mc45_day, mc45_time, mc45_selected_place, event_title, event_choice))
+    $ mc45_time = min(3, mc45_time + 1)
+    call screen mc45_result_card
+    jump meicheng_town_hub
+
+
+label mc45_night_return:
+    call screen mc45_deep_night
+    $ mc45_night_settlement()
+    if mc45_day >= 45:
+        $ mc45_finished = True
+        $ finish_chapter(4, "meicheng_45_days")
+        jump day1_map_hub
+    $ mc45_day += 1
+    $ mc45_time = 0
+    $ mc45_weather = mc45_weather_next(mc45_day, mc45_weather)
+    $ mc45_last_result = ""
+    jump meicheng_town_hub

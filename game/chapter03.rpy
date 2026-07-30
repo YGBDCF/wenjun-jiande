@@ -125,10 +125,13 @@ label chapter_3:
     $ ch3_chain = 0
     $ immersive_items = ["转运交接单", "油布与封签记录"]
     $ immersive_archive_count = 2
-    scene black
-    with fade
-    centered "{size=58}第三章　护送《四库全书》{/size}\n\n{size=32}为斯文存一线{/size}\n\n{size=22}1937年11月　富阳、桐庐至建德{/size}"
-    pause 1.4
+    call screen chapter_title_card(
+        "images/chapter03/siku_cargo_hold.png",
+        "第三章",
+        "护送《四库全书》",
+        "为斯文存一线",
+        "1937年11月  富阳、桐庐至建德"
+    )
     jump ch3_scene_hub
 
 
@@ -153,7 +156,7 @@ label ch3_scene_hub:
             jump ch3_scene_hub
         jump ch3_ending
 
-    call expression "ch3_task_" + ch3_selected
+    call expression "ch3_task_" + ch3_selected from _call_expression_1
     if ch3_selected not in ch3_scene_tasks:
         $ ch3_scene_tasks.append(ch3_selected)
     jump ch3_scene_hub
