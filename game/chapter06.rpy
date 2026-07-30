@@ -337,6 +337,8 @@ label ch6_ending:
     else:
         centered "{size=50}尾声　仍在学习{/size}\n\n纸页已经印出，而公共记录的责任仍需继续学习。"
     pause 1.0
+    if in_chapter_episode:
+        jump campaign_complete_chapter6
     menu:
         "浙江篇六章体验完成。"
         "返回章节地图":

@@ -94,8 +94,14 @@ label day1_map_hub:
     call screen day1_chapter_map
     $ selected_chapter = _return
 
+    if selected_chapter == "jiande_campaign":
+        if campaign_started:
+            $ campaign_prepare_map_switch("jiande_exploration_map")
+        jump jiande_campaign_bootstrap
+
+    # 兼容旧版本地图返回值。
     if selected_chapter == "meicheng_town":
-        jump meicheng_town_hub
+        jump jiande_campaign_bootstrap
 
     if isinstance(selected_chapter, str) and selected_chapter.startswith("meicheng:"):
         $ selected_place = selected_chapter.split(":", 1)[1]
@@ -122,6 +128,8 @@ label day1_map_hub:
     elif selected_chapter == 4:
         jump chapter_4
     elif selected_chapter == 5:
+        if campaign_started:
+            jump enter_chapter5_episode
         jump chapter_5
     elif selected_chapter == 6:
         jump chapter_6

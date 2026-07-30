@@ -22,6 +22,10 @@ init python:
     }
 
     def day1_is_unlocked(chapter_id):
+        if chapter_id == 5:
+            return store.chapter5_unlocked or store.chapter5_completed
+        if chapter_id == 6:
+            return store.chapter6_unlocked or store.chapter6_completed
         return chapter_id <= store.day1_current_chapter
 
     def day1_finish_chapter(chapter_id):

@@ -145,7 +145,7 @@ label ch5_scene_hub:
             $ ch5_scene_tasks = []
             jump ch5_scene_hub
         jump ch5_ending
-    call expression "ch5_task_" + ch5_selected from _call_expression_3
+    call expression "ch5_task_" + ch5_selected
     if ch5_selected not in ch5_scene_tasks:
         $ ch5_scene_tasks.append(ch5_selected)
     jump ch5_scene_hub
@@ -335,6 +335,11 @@ label ch5_ending:
     with fade
     narrator_day1 "“黑板挂在胸前”不是忽视警报，也不是夸饰性的表演。它发生在熄灯、关窗、带名册、点清人员之后。"
     zhang "保存课堂，先要保存人。人到了，课也要有办法接上。"
+    if in_chapter_episode:
+        if 5 not in day1_completed_chapters:
+            $ day1_completed_chapters.append(5)
+        centered "{size=46}第五章完成{/size}\n\n梅城的临时教室即将启用"
+        jump campaign_complete_chapter5
     $ day1_finish_chapter(5)
-    centered "{size=46}第五章完成{/size}\n\n第六章　《浙大日报》已解锁"
+    centered "{size=46}第五章完成{/size}"
     jump day1_map_hub

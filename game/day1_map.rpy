@@ -89,25 +89,33 @@ screen day1_chapter_map():
                         color "#97938a"
                         outlines [(2, "#17130f", 0, 0)]
 
-    # 第四章通关后，梅城成为独立的长期探索区域。
+    # 第四章通关后进入共享状态的建德战役。往返两张地图不消耗时段。
     if 4 in day1_completed_chapters:
         frame:
-            xpos 1635
-            ypos 570
-            xsize 245
-            ysize 74
+            xpos 1580
+            ypos 550
+            xsize 300
+            ysize 104
             background Solid("#10140fe8")
-            padding (8, 6)
+            padding (10, 8)
 
-            textbutton "进入梅城镇":
+            vbox:
                 xfill True
-                yfill True
-                text_size 22
-                text_color "#ead091"
-                text_hover_color "#ffe4a0"
-                text_xalign 0.5
-                text_yalign 0.5
-                action Return("meicheng_town")
+                spacing 2
+
+                textbutton ("返回梅城生活" if campaign_started else "进入建德·梅城"):
+                    xfill True
+                    text_size 22
+                    text_color "#ead091"
+                    text_hover_color "#ffe4a0"
+                    text_xalign 0.5
+                    action Return("jiande_campaign")
+
+                if campaign_started:
+                    text "第[campaign_day]日 · [CAMPAIGN_PERIOD_NAMES[campaign_period]]":
+                        xalign 0.5
+                        size 16
+                        color "#aaa28f"
 
     frame:
         xpos 715

@@ -35,6 +35,7 @@ default mc45_departure_readiness = 0
 
 default mc45_selected_place = "dock"
 default mc45_last_result = ""
+default mc45_sidebar_open = False
 
 
 init python:
@@ -53,6 +54,9 @@ init python:
             store.mc45_reputation += 1
             store.mc45_resident_trust += 1
             store.mc45_last_result = "你先照料了具体的人，这份体谅被记住了。"
+        completed_request = campus_try_complete_request(store.mc45_selected_place, choice_id)
+        if completed_request:
+            store.mc45_last_result += "\n校务请求“%s”已经完成。" % CAMPUS_REQUESTS[completed_request]["title"]
 
     def mc45_night_settlement():
         cold = store.mc45_weather in ("北风", "寒潮", "霜冻", "雨夹雪", "冻雨")
@@ -71,46 +75,87 @@ screen mc45_world_map():
     modal True
     $ day_info = mc45_info(mc45_day)
     $ time_name = MC45_TIME_NAMES[mc45_time]
+    $ campaign_post_classroom = classroom_unlocked and map_visual_phase == "post_classroom"
+    $ campaign_map_image = ("images/meicheng_town/meicheng_town_post_ch5_v4.png" if campaign_post_classroom else "images/meicheng_town/meicheng_town_base_v1.png")
+    $ campaign_pre_rects = {
+        "linchang": (240, 155, 150, 58),
+        "office": (925, 165, 190, 58),
+        "dormitory": (1450, 155, 190, 58),
+        "kongmiao": (180, 365, 150, 58),
+        "zhu_residence": (925, 415, 180, 58),
+        "minju": (1430, 405, 150, 58),
+        "pawnshop": (1480, 700, 150, 58),
+        "dock": (340, 700, 170, 58),
+    }
+    $ campaign_post_rects = {
+        "linchang": (650, 170, 150, 58),
+        "office": (1080, 175, 190, 58),
+        "dormitory": (1510, 170, 190, 58),
+        "kongmiao": (485, 350, 150, 58),
+        "zhu_residence": (1080, 400, 180, 58),
+        "minju": (1490, 390, 150, 58),
+        "pawnshop": (1510, 620, 150, 58),
+        "dock": (800, 650, 170, 58),
+    }
+    $ campaign_map_rects = campaign_post_rects if campaign_post_classroom else campaign_pre_rects
+    $ classroom_rect = (145, 560, 180, 58)
 
-    add "images/meicheng_town/meicheng_town_base_v1.png":
+    add campaign_map_image:
         xysize (1920, 1080)
     add Solid(MC45_TIME_TINTS[mc45_time])
 
     frame:
         xpos 30
         ypos 24
-        xsize 820
-        ysize 112
-        background Solid("#10140ed9")
-        padding (24, 12)
+        xsize 690
+        ysize 86
+        background Solid("#10140ec7")
+        padding (20, 9)
         vbox:
             spacing 2
             text "建德梅城  第[mc45_day]日  [day_info[0]]  [time_name]":
-                size 29
+                size 25
                 color "#ead39a"
             text "[day_info[1]]阶段 · [mc45_weather] · 今日：[day_info[2]]":
-                size 19
+                size 16
                 color "#c7c1b2"
 
     frame:
-        xpos 870
+        xpos 735
         ypos 24
-        xsize 1015
-        ysize 112
-        background Solid("#10140ed9")
-        padding (20, 12)
+        xsize 925
+        ysize 58
+        background Solid("#10140eb8")
+        padding (18, 9)
         hbox:
-            spacing 22
-            text "体力 [mc45_stamina]/6" size 19 color "#d7c894"
-            text "健康 [mc45_health]" size 19 color "#d7c894"
-            text "保暖 [mc45_warmth]" size 19 color "#d7c894"
-            text "纸墨 [mc45_paper]" size 19 color "#d7c894"
-            text "学识 [mc45_knowledge]" size 19 color "#bfc5b5"
-            text "实务 [mc45_practice]" size 19 color "#bfc5b5"
-            text "人望 [mc45_reputation]" size 19 color "#bfc5b5"
+            spacing 18
+            text "体力 [mc45_stamina]/6" size 16 color "#d7c894"
+            text "健康 [mc45_health]" size 16 color "#d7c894"
+            text "保暖 [mc45_warmth]" size 16 color "#d7c894"
+            text "纸墨 [mc45_paper]" size 16 color "#d7c894"
+            text "学识 [mc45_knowledge]" size 16 color "#bfc5b5"
+            text "实务 [mc45_practice]" size 16 color "#bfc5b5"
+            text "人望 [mc45_reputation]" size 16 color "#bfc5b5"
 
-    for place_id, meta in MC45_LOCATION_META.items():
-        $ place_name, place_bg, rect = meta
+    textbutton ("收起今日信息" if mc45_sidebar_open else "今日信息"):
+        xpos 1680
+        ypos 24
+        xsize 205
+        ysize 58
+        text_size 17
+        text_color "#e5ca8c"
+        text_hover_color "#fff0bd"
+        text_xalign 0.5
+        text_yalign 0.5
+        background Solid("#10140ed0")
+        hover_background Solid("#352b1de8")
+        action ToggleVariable("mc45_sidebar_open")
+
+    $ campaign_place_ids = ("kongmiao", "linchang", "office", "minju", "pawnshop", "dock", "dormitory", "zhu_residence")
+    for place_id in campaign_place_ids:
+        $ meta = MC45_LOCATION_META[place_id]
+        $ place_name, place_bg, old_rect = meta
+        $ rect = campaign_map_rects[place_id]
         $ px, py, pw, ph = rect
         $ residence_open = (place_id != "zhu_residence" or mc45_day >= 3)
         $ can_enter = mc45_time < 3 and mc45_stamina > 0 and residence_open
@@ -120,48 +165,69 @@ screen mc45_world_map():
             xsize pw
             ysize ph
             background Solid("#00000000")
-            hover_background (Solid("#d3a64b20") if can_enter else Solid("#00000000"))
+            hover_background (Solid("#d3a64b38") if can_enter else Solid("#00000000"))
             action (Return(place_id) if can_enter else NullAction())
             frame:
                 xalign 0.5
-                yalign 1.0
-                xsize min(pw - 20, 290)
-                ysize 68
-                background Solid("#11140edc")
-                padding (8, 5)
+                yalign 0.5
+                xsize pw
+                ysize ph
+                background Solid("#11140ec4")
+                padding (6, 3)
                 vbox:
                     xalign 0.5
                     text place_name:
                         xalign 0.5
-                        size 23
+                        size 18
                         color ("#ead39a" if can_enter else "#99958a")
                     if not residence_open:
-                        text "第3日后开放" xalign 0.5 size 14 color "#9a9281"
+                        text "第3日后开放" xalign 0.5 size 11 color "#9a9281"
                     elif mc45_time == 3:
-                        text "深夜不可行动" xalign 0.5 size 14 color "#9a9281"
+                        text "深夜不可行动" xalign 0.5 size 11 color "#9a9281"
                     elif mc45_stamina <= 0:
-                        text "体力不足" xalign 0.5 size 14 color "#9a9281"
+                        text "体力不足" xalign 0.5 size 11 color "#9a9281"
                     else:
-                        text "点击进入" xalign 0.5 size 14 color "#c1b89f"
+                        text "进入" xalign 0.5 size 11 color "#c1b89f"
 
-    frame:
-        xpos 1395
-        ypos 150
-        xsize 490
-        ysize 405
-        background Solid("#11140ee8")
-        padding (24, 18)
-        vbox:
-            spacing 8
-            text "今日主题" size 24 color "#e5ca8c"
-            text day_info[2] size 29 color "#eee3c9"
-            text day_info[3] size 19 color "#c9c4b7" xmaximum 430 line_spacing 5
-            null height 6
-            text "今日标志物" size 20 color "#e5ca8c"
-            text day_info[4] size 23 color "#d9d3c5"
-            null height 6
-            text "行动规则" size 20 color "#e5ca8c"
-            text "早晨、午间、傍晚各行动一次；深夜必须返回学生宿舍结算。" size 17 color "#aaa79e" xmaximum 430 line_spacing 4
+    # 第五章完成后，镜头拉远并在左侧扩出临时教室；此前不显示虚假建筑。
+    if classroom_unlocked:
+        button:
+            xpos classroom_rect[0]
+            ypos classroom_rect[1]
+            xsize classroom_rect[2]
+            ysize classroom_rect[3]
+            background Solid("#11140ec4")
+            hover_background Solid("#d3a64b38")
+            action Return("classroom")
+            vbox:
+                xalign 0.5
+                yalign 0.5
+                text "临时教室" xalign 0.5 size 18 color "#ead39a"
+                text "进入" xalign 0.5 size 11 color "#c1b89f"
+
+    if mc45_sidebar_open:
+        frame:
+            xpos 1510
+            ypos 98
+            xsize 375
+            ysize 440
+            background Solid("#11140ef2")
+            padding (22, 17)
+            vbox:
+                spacing 7
+                text "今日主题" size 21 color "#e5ca8c"
+                text day_info[2] size 25 color "#eee3c9"
+                text day_info[3] size 16 color "#c9c4b7" xmaximum 325 line_spacing 4
+                null height 4
+                text "今日标志物" size 18 color "#e5ca8c"
+                text day_info[4] size 20 color "#d9d3c5"
+                null height 4
+                text "行动规则" size 18 color "#e5ca8c"
+                text "早晨、午间、傍晚各行动一次；深夜返回学生宿舍结算。" size 15 color "#aaa79e" xmaximum 325 line_spacing 3
+                null height 4
+                text "公共物资" size 18 color "#e5ca8c"
+                text "木料 [campus_stock['wood']]  纸张 [campus_stock['paper']]  灯油 [campus_stock['lamp_oil']]" size 14 color "#c9c4b7"
+                text "粮食 [campus_stock['grain']]  药品 [campus_stock['medicine']]  校务 [campus_score]" size 14 color "#c9c4b7"
 
     if mc45_time == 3:
         frame:
@@ -410,25 +476,68 @@ label meicheng_town_hub:
         $ mc45_time = 0
         $ mc45_weather = "江雾"
 
+    $ campaign_import_legacy_turn()
+    if campaign_exam_is_due():
+        if campaign_day >= 8 and not classroom_unlocked:
+            $ chapter5_unlocked = True
+            $ chapter5_completed = True
+            $ classroom_unlocked = True
+            $ map_visual_phase = "post_classroom"
+            call classroom_opening_sequence
+        jump campaign_forced_exam
+    if campaign_day == 7 and not chapter5_completed:
+        jump day7_chapter5_gate
+    if campaign_day == 20 and not chapter6_completed:
+        jump day20_chapter6_gate
+
     call screen mc45_world_map
     $ mc45_selection = _return
 
     if mc45_selection == "world":
-        jump day1_map_hub
+        $ campaign_import_legacy_turn()
+        if can_switch_meta_map():
+            $ campaign_prepare_map_switch("chapter_world_map")
+            jump chapter_world_map_hub
+        jump meicheng_town_hub
     if mc45_selection == "night":
         jump mc45_night_return
+    if mc45_selection == "classroom":
+        jump campaign_classroom_hub
 
     $ mc45_selected_place = mc45_selection
+    $ current_location = mc45_selected_place
     jump mc45_run_interaction
 
 
 label mc45_run_interaction:
+    if mc45_selected_place == "office":
+        call campus_office_request_board
+
+    $ bond_candidate = campaign_bond_candidate(mc45_selected_place)
+    if bond_candidate:
+        call campaign_bond_event_label(bond_candidate)
+        if _return:
+            call screen mc45_result_card
+            jump meicheng_town_hub
+
+    $ club_candidate = campaign_club_activity_for_turn(mc45_selected_place)
+    if club_candidate:
+        call campaign_club_activity_label(club_candidate)
+        if _return:
+            call screen mc45_result_card
+            jump meicheng_town_hub
+
     $ info = mc45_info(mc45_day)
     $ is_anchor = mc45_day not in mc45_anchor_seen
     if is_anchor:
         $ event_title = info[2]
         $ event_text = info[3]
     else:
+        $ catalog_event = campaign_pick_random_event(mc45_selected_place)
+        if catalog_event:
+            call campaign_random_event_label(catalog_event)
+            call screen mc45_result_card
+            jump meicheng_town_hub
         $ event_title, event_text = mc45_pick_location_event(mc45_selected_place, mc45_day, mc45_event_history)
 
     call screen mc45_event_scene(mc45_selected_place, event_title, event_text, is_anchor)
@@ -444,19 +553,29 @@ label mc45_run_interaction:
 
     $ mc45_event_history.append((mc45_day, mc45_time, mc45_selected_place, event_title, event_choice))
     $ mc45_time = min(3, mc45_time + 1)
+    $ campaign_import_legacy_turn()
     call screen mc45_result_card
     jump meicheng_town_hub
 
 
 label mc45_night_return:
-    call screen mc45_deep_night
+    $ current_location = "dormitory"
+    $ campaign_period = 3
     $ mc45_night_settlement()
+    $ campus_night_settlement()
+    $ campaign_extended_night_settlement()
+    call screen mc45_deep_night
+    $ night_settlement_count += 1
     if mc45_day >= 45:
         $ mc45_finished = True
+        $ campaign_finished = True
+        $ days_completed = 45
         $ finish_chapter(4, "meicheng_45_days")
         jump day1_map_hub
     $ mc45_day += 1
     $ mc45_time = 0
     $ mc45_weather = mc45_weather_next(mc45_day, mc45_weather)
     $ mc45_last_result = ""
+    $ campaign_import_legacy_turn()
+    $ days_completed = min(45, night_settlement_count)
     jump meicheng_town_hub
