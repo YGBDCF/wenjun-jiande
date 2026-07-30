@@ -448,6 +448,10 @@ screen mc45_deep_night():
                 text "保暖 [mc45_warmth]" size 21 color "#d7d0bf"
                 text "师生士气 [mc45_morale]" size 21 color "#d7d0bf"
                 text "迁移准备 [mc45_departure_readiness]" size 21 color "#d7d0bf"
+                null height 4
+                text "今日回流" size 20 color "#e3ca8c"
+                for settlement_line in last_night_summary[-6:]:
+                    text "· [settlement_line]" size 15 color "#bdb8aa" xmaximum 470
                 null height 20
                 textbutton ("进入下一日" if mc45_day < 45 else "结束建德篇"):
                     xsize 380
@@ -483,11 +487,11 @@ label meicheng_town_hub:
             $ chapter5_completed = True
             $ classroom_unlocked = True
             $ map_visual_phase = "post_classroom"
-            call classroom_opening_sequence from _call_classroom_opening_sequence_1
+            call classroom_opening_sequence
         jump campaign_forced_exam
     if campaign_day == 7 and not chapter5_completed:
         jump day7_chapter5_gate
-    if campaign_day == 20 and not chapter6_completed:
+    if campaign_day >= 20 and not chapter6_completed:
         jump day20_chapter6_gate
 
     call screen mc45_world_map
@@ -511,18 +515,18 @@ label meicheng_town_hub:
 
 label mc45_run_interaction:
     if mc45_selected_place == "office":
-        call campus_office_request_board from _call_campus_office_request_board
+        call campus_office_request_board
 
     $ bond_candidate = campaign_bond_candidate(mc45_selected_place)
     if bond_candidate:
-        call campaign_bond_event_label(bond_candidate) from _call_campaign_bond_event_label
+        call campaign_bond_event_label(bond_candidate)
         if _return:
             call screen mc45_result_card
             jump meicheng_town_hub
 
     $ club_candidate = campaign_club_activity_for_turn(mc45_selected_place)
     if club_candidate:
-        call campaign_club_activity_label(club_candidate) from _call_campaign_club_activity_label_1
+        call campaign_club_activity_label(club_candidate)
         if _return:
             call screen mc45_result_card
             jump meicheng_town_hub
@@ -535,7 +539,7 @@ label mc45_run_interaction:
     else:
         $ catalog_event = campaign_pick_random_event(mc45_selected_place)
         if catalog_event:
-            call campaign_random_event_label(catalog_event) from _call_campaign_random_event_label
+            call campaign_random_event_label(catalog_event)
             call screen mc45_result_card
             jump meicheng_town_hub
         $ event_title, event_text = mc45_pick_location_event(mc45_selected_place, mc45_day, mc45_event_history)
@@ -559,10 +563,12 @@ label mc45_run_interaction:
 
 
 label mc45_night_return:
+    $ return_summary = campaign_forced_return_settlement()
     $ current_location = "dormitory"
     $ campaign_period = 3
     $ mc45_night_settlement()
     $ campus_night_settlement()
+    $ campus_last_settlement = return_summary + campus_last_settlement
     $ campaign_extended_night_settlement()
     call screen mc45_deep_night
     $ night_settlement_count += 1

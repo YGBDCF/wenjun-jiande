@@ -44,6 +44,15 @@ init python:
         assert set(store.relationship.keys()) >= {"xu_nanzhi", "gu_mingchuan", "zhou_shunan", "mentor"}
         assert all(0 <= value <= 100 for value in store.relationship.values())
         assert campus_recalculate_score() == store.campus_score
+        assert len(RANDOM_EVENT_CATALOG) == 83
+        assert all(len(event.get("choices", [])) >= 2 for event in RANDOM_EVENT_CATALOG)
+        assert all(
+            any(bool(choice.get("effects")) or bool(choice.get("follow")) for choice in event["choices"])
+            for event in RANDOM_EVENT_CATALOG
+        )
+        assert isinstance(store.daily_action_log, list)
+        assert isinstance(store.last_night_summary, list)
+        assert isinstance(store.night_return_modifier, int)
         return True
 
     def campaign_assert_campus_stock_caps():

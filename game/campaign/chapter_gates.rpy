@@ -159,13 +159,38 @@ label campaign_complete_chapter5:
     $ in_chapter_episode = False
     $ active_meta_map = "jiande_exploration_map"
     $ campaign_sync_legacy_view()
-    call classroom_opening_sequence from _call_classroom_opening_sequence
+    call classroom_opening_sequence
     jump jiande_map_hub
 
 
+init python:
+    def campaign_finalize_newspaper_preparation():
+        """按筹备完成度施加一次性Day20结果，创刊史实不因玩家表现而失败。"""
+        if store.day20_gate_applied:
+            return
+        completed = len(store.newspaper_prep_flags)
+        if completed >= 4:
+            store.newspaper_prep_score = max(store.newspaper_prep_score, 4)
+            store.newspaper_accuracy = campaign_clamp(store.newspaper_accuracy + 8, 0, 100)
+            store.world_public_confidence = campaign_clamp(store.world_public_confidence + 5, 0, 100)
+            store.archive_items.add("创刊筹备者")
+            store.story_flags.add("newspaper_prep_complete")
+        elif completed >= 2:
+            store.newspaper_fallback_used = True
+            store.world_public_confidence = campaign_clamp(store.world_public_confidence - 5, 0, 100)
+            store.story_flags.add("newspaper_prep_partial")
+        else:
+            store.newspaper_fallback_used = True
+            store.world_public_confidence = campaign_clamp(store.world_public_confidence - 10, 0, 100)
+            store.campus_stock["paper"] = max(0, store.campus_stock["paper"] - 1)
+            store.story_flags.add("newspaper_prep_minimal")
+        store.day20_gate_applied = True
+
+
 label day20_chapter6_gate:
-    if campaign_day != 20 or chapter6_completed:
+    if campaign_day < 20 or chapter6_completed:
         return
+    $ campaign_finalize_newspaper_preparation()
     $ chapter6_unlocked = True
     $ in_forced_story = True
     call screen campaign_story_notice(

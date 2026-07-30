@@ -3,6 +3,40 @@
 # ================================================================
 
 init python:
+    def campaign_forced_return_settlement():
+        """晚间行动后的强制返宿：只结算风险，不再给玩家额外行动。"""
+        summary = []
+        distance_cost = {
+            "dock": 1,
+            "linchang": 1,
+            "pawnshop": 1,
+            "office": 0,
+            "zhu_residence": 0,
+            "minju": 0,
+            "kongmiao": 0,
+            "classroom": 0,
+            "dormitory": -1,
+        }.get(store.current_location, 0)
+        weather_cost = 0
+        if store.current_weather in ("连阴雨", "雨夹雪", "冻雨", "寒潮", "北风"):
+            weather_cost = 1
+        if store.current_weather in ("冻雨", "雨夹雪") and store.rain_gear_condition <= 0:
+            weather_cost += 1
+
+        total_cost = max(0, distance_cost + weather_cost + int(store.night_return_modifier))
+        if total_cost:
+            store.stat_stamina = campaign_clamp(store.stat_stamina - total_cost, 0, store.stat_stamina_max)
+            summary.append("返宿路途：体力-%d" % total_cost)
+        else:
+            summary.append("返宿路途平安，没有额外损耗")
+        if weather_cost:
+            summary.append("天气使道路与照明条件变差")
+        summary.extend(store.night_return_notes[-2:])
+        store.current_location = "dormitory"
+        store.night_return_modifier = 0
+        store.night_return_notes = []
+        return summary
+
     def campaign_extended_night_settlement():
         summary = []
 
@@ -50,4 +84,5 @@ init python:
         store.journal_entries = store.journal_entries[-45:]
         if summary:
             store.campus_last_settlement.extend(summary)
+        store.last_night_summary = list(store.campus_last_settlement)
         campaign_normalize_state()

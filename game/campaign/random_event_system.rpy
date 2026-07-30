@@ -13,6 +13,25 @@ init python:
 
     RANDOM_PERIOD_NAME = {0: "早晨", 1: "中午", 2: "晚间", 3: "深夜结算"}
 
+    def campaign_event_pages(event):
+        pages = []
+        for paragraph in event.get("narrative_segments", event.get("opening", [])):
+            pages.append({"kind": "narrative", "text": paragraph})
+        dialogue = event.get("dialogue_nodes", [])
+        if dialogue:
+            pages.append({"kind": "dialogue", "lines": dialogue})
+        if not pages:
+            pages.append({"kind": "narrative", "text": "现场记录暂缺。"})
+        return pages
+
+    def campaign_event_scene_image(event, reader_page=0):
+        illustration = event.get("illustration_path")
+        if illustration and int(reader_page) >= 1 and renpy.loadable(illustration):
+            return illustration
+        if event.get("location_id") == "classroom" and renpy.loadable(campaign_classroom_background()):
+            return campaign_classroom_background()
+        return MC45_LOCATION_META[store.current_location][1]
+
     def campaign_event_weather_matches(event_weather):
         if "任意" in event_weather:
             return True
@@ -170,30 +189,84 @@ init python:
                 store.story_flags.add("catalog_effect_%s_%s" % (key, int(amount)))
         campaign_apply_canonical_effects(canonical)
 
-    def campaign_location_base_progress(location_id):
+    def campaign_location_base_progress(location_id, event=None):
+        """每次地点行动的稳定收益；随机事件本身的代价仍由事件JSON决定。"""
+        location_id = {
+            "residence": "minju",
+            "student_dormitory": "dormitory",
+        }.get(location_id, location_id)
+        effects = {}
         if location_id in ("kongmiao", "classroom"):
-            store.weekly_preparation = campaign_clamp(store.weekly_preparation + 2, 0, 100)
+            effects = {"prep": 4, "course": 1}
             store.daily_knowledge_actions += 1
-            store.weekly_attendance_possible += 1
-            store.weekly_attendance_present += 1
-        elif location_id in ("linchang", "dock", "pawnshop"):
-            store.stat_practical = campaign_clamp(store.stat_practical + 1, 0, 20)
-        elif location_id in ("minju", "dormitory"):
-            store.stat_morality = campaign_clamp(store.stat_morality + 1, 0, 20)
-        elif location_id in ("office", "zhu_residence"):
-            store.stat_reputation = campaign_clamp(store.stat_reputation + 1, 0, 20)
+        elif location_id == "linchang":
+            effects = {"practical": 1, "material": 1}
+        elif location_id == "office":
+            effects = {"reputation": 1, "public": 1}
+        elif location_id == "minju":
+            effects = {"morality": 1, "resident": 1}
+        elif location_id == "pawnshop":
+            effects = {"practical": 1, "material": 1}
+        elif location_id == "dock":
+            effects = {"practical": 1, "migration": 1}
+        elif location_id == "dormitory":
+            effects = {"will": 1, "dorm_order": 1}
+        elif location_id == "zhu_residence":
+            effects = {"will": 1, "reputation": 1}
+            store.hidden_zhu_impression = campaign_clamp(store.hidden_zhu_impression + 1, -10, 10)
+        campaign_apply_canonical_effects(effects)
+
+        title = event.get("title", "地点活动") if event else "地点活动"
+        store.daily_action_log.append({
+            "day": store.campaign_day,
+            "period": store.campaign_period,
+            "location": location_id,
+            "title": title,
+            "effects": dict(effects),
+        })
+        store.daily_action_log = store.daily_action_log[-135:]
+        campaign_update_newspaper_preparation(location_id)
+
+    def campaign_update_newspaper_preparation(location_id):
+        """Day10—19把日常地点工作接入创刊筹备，不改变史实中的创刊结果。"""
+        if not (10 <= store.campaign_day <= 19):
+            return
+        store.newspaper_prep_started = True
+        flag_by_location = {
+            "office": "sources",
+            "dock": "delivery",
+            "kongmiao": "proofreading",
+            "classroom": "proofreading",
+            "minju": "distribution",
+            "dormitory": "volunteers",
+        }
+        prep_flag = flag_by_location.get(location_id)
+        if prep_flag and prep_flag not in store.newspaper_prep_flags:
+            store.newspaper_prep_flags.add(prep_flag)
+            store.newspaper_prep_score = min(7, store.newspaper_prep_score + 1)
+            store.story_flags.add("newspaper_prep_%s" % prep_flag)
 
     def campaign_complete_random_event(event, choice_index):
         choice = event["choices"][choice_index]
         campaign_apply_catalog_effects(choice.get("effects", {}))
-        campaign_location_base_progress(event["location_id"] if event["location_id"] != "global" else store.current_location)
+        campaign_location_base_progress(
+            event["location_id"] if event["location_id"] != "global" else store.current_location,
+            event,
+        )
         store.stat_stamina = max(0, store.stat_stamina - 1)
         store.seen_events.add(event["id"])
         store.recent_events.append(event["id"])
         store.recent_events = store.recent_events[-8:]
         store.event_cooldowns[event["id"]] = store.campaign_day + int(event.get("cooldown", 1))
-        if choice.get("follow"):
+        follow_text = str(choice.get("follow") or "")
+        if follow_text and follow_text != "无":
             store.story_flags.add("follow_%s" % event["id"])
+            if "夜归损耗+1" in follow_text or "夜归迟到" in follow_text or "夜归风险上升" in follow_text:
+                store.night_return_modifier += 1
+                store.night_return_notes.append("白日的决定增加了返宿难度")
+            if "夜归损耗-1" in follow_text or "夜归全员安全" in follow_text:
+                store.night_return_modifier -= 1
+                store.night_return_notes.append("白日的准备降低了返宿风险")
         approach = "verify" if any(key in choice.get("effects", {}) for key in ("求实", "学识")) else ("practice" if "实务" in choice.get("effects", {}) else "care")
         campus_try_complete_request(store.current_location, approach)
         store.mc45_event_history.append((store.campaign_day, store.campaign_period, store.current_location, event["title"], choice_index))
@@ -207,8 +280,16 @@ init python:
 
 screen campaign_random_event(event):
     modal True
-    add MC45_LOCATION_META[current_location][1]:
+    default reader_page = 0
+    $ reader_pages = campaign_event_pages(event)
+    $ reader_last_page = len(reader_pages) - 1
+    $ reader_content = reader_pages[reader_page]
+    $ reader_background = campaign_event_scene_image(event, reader_page)
+
+    add reader_background:
         xysize (1920, 1080)
+    add Solid("#090b09"):
+        alpha 0.18
     frame:
         xpos 55
         ypos 55
@@ -218,25 +299,43 @@ screen campaign_random_event(event):
         padding (30, 20)
         vbox:
             text event["title"] size 38 color "#ead296"
-            text "[event['location']]　[RANDOM_PERIOD_NAME[campaign_period]]" size 19 color "#aaa598"
+            text "[event['location']]　[RANDOM_PERIOD_NAME[campaign_period]]　记录 [reader_page + 1] / [len(reader_pages)]" size 19 color "#aaa598"
     frame:
-        xpos 245
-        ypos 625
-        xsize 1430
-        ysize 390
-        background Solid("#d8c9aaed")
-        padding (42, 30)
+        xpos 170
+        ypos 570
+        xsize 1580
+        ysize 455
+        background Solid("#d8c9aaf4")
+        padding (52, 34)
         vbox:
-            spacing 14
-            for line in event["opening"]:
-                text line size 23 color "#28241d" xmaximum 1320 line_spacing 6
-            null height 8
-            hbox:
-                spacing 16
-                for index, choice in enumerate(event["choices"]):
-                    textbutton choice["text"]:
-                        xsize 430
-                        ysize 92
+            spacing 18
+            if reader_content["kind"] == "dialogue":
+                text "现场对白" size 22 color "#75613b"
+                for line in reader_content["lines"]:
+                    text line size 25 color "#28241d" xmaximum 1450 line_spacing 8
+            else:
+                text reader_content["text"] size 25 color "#28241d" xmaximum 1450 line_spacing 9
+
+            null height 6
+            if reader_page < reader_last_page:
+                hbox:
+                    xalign 1.0
+                    spacing 18
+                    if reader_page > 0:
+                        textbutton "上一页":
+                            xsize 160
+                            ysize 55
+                            text_size 19
+                            text_color "#e9d39a"
+                            text_hover_color "#fff0bd"
+                            text_xalign 0.5
+                            text_yalign 0.5
+                            background Solid("#171a16f2")
+                            hover_background Solid("#4c3b22f2")
+                            action SetScreenVariable("reader_page", reader_page - 1)
+                    textbutton "继续阅读":
+                        xsize 190
+                        ysize 55
                         text_size 19
                         text_color "#e9d39a"
                         text_hover_color "#fff0bd"
@@ -244,13 +343,57 @@ screen campaign_random_event(event):
                         text_yalign 0.5
                         background Solid("#171a16f2")
                         hover_background Solid("#4c3b22f2")
-                        action Return(index)
+                        action SetScreenVariable("reader_page", reader_page + 1)
+            else:
+                if len(event["choices"]) <= 3:
+                    hbox:
+                        xalign 0.5
+                        spacing 18
+                        for index, choice in enumerate(event["choices"]):
+                            textbutton choice["text"]:
+                                xsize 470
+                                ysize 82
+                                text_size 18
+                                text_color "#e9d39a"
+                                text_hover_color "#fff0bd"
+                                text_xalign 0.5
+                                text_yalign 0.5
+                                background Solid("#171a16f2")
+                                hover_background Solid("#4c3b22f2")
+                                action Return(index)
+                else:
+                    grid 2 2:
+                        xalign 0.5
+                        spacing 16
+                        for index, choice in enumerate(event["choices"]):
+                            textbutton choice["text"]:
+                                xsize 690
+                                ysize 68
+                                text_size 18
+                                text_color "#e9d39a"
+                                text_hover_color "#fff0bd"
+                                text_xalign 0.5
+                                text_yalign 0.5
+                                background Solid("#171a16f2")
+                                hover_background Solid("#4c3b22f2")
+                                action Return(index)
+                if reader_page > 0:
+                    textbutton "返回上一页":
+                        xalign 0.0
+                        text_size 17
+                        text_color "#6e5b38"
+                        text_hover_color "#372b18"
+                        background None
+                        action SetScreenVariable("reader_page", reader_page - 1)
 
 
 screen campaign_event_outcome(event, choice_index):
     modal True
-    add MC45_LOCATION_META[current_location][1]:
+    $ outcome_background = campaign_event_scene_image(event, 99)
+    add outcome_background:
         xysize (1920, 1080)
+    add Solid("#090b09"):
+        alpha 0.16
     frame:
         xpos 280
         ypos 670

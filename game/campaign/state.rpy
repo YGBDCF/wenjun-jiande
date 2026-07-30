@@ -44,6 +44,7 @@ default newspaper_prep_score = 0
 default newspaper_fallback_used = False
 default newspaper_system_unlocked = False
 default world_newspaper_published = False
+default day20_gate_applied = False
 
 default episode_return_day = None
 default episode_return_period = None
@@ -137,6 +138,10 @@ default newspaper_tasks_completed = 0
 default minigame_results = {}
 default weekly_reflections = []
 default final_evaluation = {}
+default daily_action_log = []
+default last_night_summary = []
+default night_return_modifier = 0
+default night_return_notes = []
 
 init python:
     import copy
@@ -253,6 +258,11 @@ init python:
             "minigame_results": {},
             "weekly_reflections": [],
             "final_evaluation": {},
+            "day20_gate_applied": False,
+            "daily_action_log": [],
+            "last_night_summary": [],
+            "night_return_modifier": 0,
+            "night_return_notes": [],
         }
         for field_name, field_default in defaults.items():
             _campaign_add_missing(field_name, field_default)
