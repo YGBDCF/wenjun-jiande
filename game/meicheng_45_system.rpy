@@ -62,6 +62,10 @@ init python:
         cold = store.mc45_weather in ("北风", "寒潮", "霜冻", "雨夹雪", "冻雨")
         if cold and store.mc45_warmth < 2:
             store.mc45_health = max(0, store.mc45_health - 3)
+            store.mc45_last_result = "寒气透进铺位，保暖不足使健康下降。"
+        elif cold and store.mc45_warmth >= 2:
+            store.mc45_health = min(100, store.mc45_health + 2)
+            store.mc45_last_result = "热水、干衣与加厚铺盖挡住寒气，今夜恢复得更好。"
         elif store.mc45_health < 100:
             store.mc45_health = min(100, store.mc45_health + 1)
         store.mc45_stamina = 6 if store.mc45_health >= 70 else 5
@@ -76,7 +80,7 @@ screen mc45_world_map():
     $ day_info = mc45_info(mc45_day)
     $ time_name = MC45_TIME_NAMES[mc45_time]
     $ campaign_post_classroom = classroom_unlocked and map_visual_phase == "post_classroom"
-    $ campaign_map_image = ("images/meicheng_town/meicheng_town_post_ch5_v4.png" if campaign_post_classroom else "images/meicheng_town/meicheng_town_base_v1.png")
+    $ campaign_map_image = mc45_weather_map_image(mc45_weather, campaign_post_classroom)
     $ campaign_pre_rects = {
         "linchang": (240, 155, 150, 58),
         "office": (925, 165, 190, 58),
@@ -103,6 +107,7 @@ screen mc45_world_map():
     add campaign_map_image:
         xysize (1920, 1080)
     add Solid(MC45_TIME_TINTS[mc45_time])
+    use mc45_weather_overlay(mc45_weather)
 
     frame:
         xpos 30
@@ -158,7 +163,8 @@ screen mc45_world_map():
         $ rect = campaign_map_rects[place_id]
         $ px, py, pw, ph = rect
         $ residence_open = (place_id != "zhu_residence" or mc45_day >= 3)
-        $ can_enter = mc45_time < 3 and mc45_stamina > 0 and residence_open
+        $ weather_open, weather_reason = mc45_weather_location_access(place_id, mc45_weather)
+        $ can_enter = mc45_time < 3 and mc45_stamina > 0 and residence_open and weather_open
         button:
             xpos px
             ypos py
@@ -166,7 +172,7 @@ screen mc45_world_map():
             ysize ph
             background Solid("#00000000")
             hover_background (Solid("#d3a64b38") if can_enter else Solid("#00000000"))
-            action (Return(place_id) if can_enter else NullAction())
+            action (Return(place_id) if can_enter else (Notify(weather_reason) if not weather_open else NullAction()))
             frame:
                 xalign 0.5
                 yalign 0.5
@@ -182,6 +188,8 @@ screen mc45_world_map():
                         color ("#ead39a" if can_enter else "#99958a")
                     if not residence_open:
                         text "第3日后开放" xalign 0.5 size 11 color "#9a9281"
+                    elif not weather_open:
+                        text "天气暂停通行" xalign 0.5 size 11 color "#c09a72"
                     elif mc45_time == 3:
                         text "深夜不可行动" xalign 0.5 size 11 color "#9a9281"
                     elif mc45_stamina <= 0:
@@ -224,6 +232,8 @@ screen mc45_world_map():
                 null height 4
                 text "行动规则" size 18 color "#e5ca8c"
                 text "早晨、午间、傍晚各行动一次；深夜返回学生宿舍结算。" size 15 color "#aaa79e" xmaximum 325 line_spacing 3
+                text "天气提示" size 18 color "#e5ca8c"
+                text mc45_weather_notice(mc45_weather) size 14 color "#c9c4b7" xmaximum 325 line_spacing 3
                 null height 4
                 text "公共物资" size 18 color "#e5ca8c"
                 text "木料 [campus_stock['wood']]  纸张 [campus_stock['paper']]  灯油 [campus_stock['lamp_oil']]" size 14 color "#c9c4b7"
@@ -453,15 +463,26 @@ screen mc45_deep_night():
                 for settlement_line in last_night_summary[-6:]:
                     text "· [settlement_line]" size 15 color "#bdb8aa" xmaximum 470
                 null height 20
-                textbutton ("进入下一日" if mc45_day < 45 else "结束建德篇"):
-                    xsize 380
-                    ysize 65
-                    text_size 23
-                    text_color "#ead39a"
-                    text_hover_color "#fff0bd"
-                    background Solid("#3b301fe8")
-                    hover_background Solid("#5a4628ee")
-                    action Return()
+                if mc45_day < 45:
+                    textbutton "进入下一日":
+                        xsize 380
+                        ysize 65
+                        text_size 23
+                        text_color "#ead39a"
+                        text_hover_color "#fff0bd"
+                        background Solid("#3b301fe8")
+                        hover_background Solid("#5a4628ee")
+                        action Return()
+                else:
+                    textbutton "结束建德生活":
+                        xsize 380
+                        ysize 65
+                        text_size 23
+                        text_color "#ead39a"
+                        text_hover_color "#fff0bd"
+                        background Solid("#3b301fe8")
+                        hover_background Solid("#5a4628ee")
+                        action Jump("finale_roll_call")
 
 
 label meicheng_town_hub:
@@ -480,6 +501,7 @@ label meicheng_town_hub:
         $ mc45_time = 0
         $ mc45_weather = "江雾"
 
+    $ mc45_sync_weather_ambience(mc45_weather)
     $ campaign_import_legacy_turn()
     if campaign_exam_is_due():
         if campaign_day >= 8 and not classroom_unlocked:
@@ -573,11 +595,7 @@ label mc45_night_return:
     call screen mc45_deep_night
     $ night_settlement_count += 1
     if mc45_day >= 45:
-        $ mc45_finished = True
-        $ campaign_finished = True
-        $ days_completed = 45
-        $ finish_chapter(4, "meicheng_45_days")
-        jump day1_map_hub
+        jump finale_roll_call
     $ mc45_day += 1
     $ mc45_time = 0
     $ mc45_weather = mc45_weather_next(mc45_day, mc45_weather)

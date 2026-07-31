@@ -69,7 +69,26 @@ init python:
         "dock": ("梅城码头", "images/chapter04/meicheng_dock.png", (1460, 700, 390, 230)),
         "dormitory": ("学生宿舍", "images/chapter01/backgrounds/dormitory_rain.png", (1075, 265, 355, 225)),
         "zhu_residence": ("竺可桢故居", "images/meicheng_45/locations/zhu_residence_1937.png", (75, 705, 395, 230)),
+        # 以下是活动场景的内部地点，不参与梅城地图热点绘制。
+        # 社团、课程和校报活动会暂时把 current_location 切换到这些键，
+        # 因此同样必须拥有可用的场景元数据。
+        "classroom": ("临时教室", "assets/backgrounds/classroom/bg_classroom_day.png", (0, 0, 0, 0)),
+        "newspaper": ("《浙大日报》编辑室", "images/chapter06/newspaper_room.png", (0, 0, 0, 0)),
+        # 兼容早期存档使用过的旧地点名。
+        "residence": ("民居", "images/chapter04/minju_lodging.png", (0, 0, 0, 0)),
     }
+
+    def campaign_location_meta(location_id):
+        """Return safe metadata for map locations and internal activity rooms."""
+        aliases = {"residence": "minju"}
+        safe_id = aliases.get(str(location_id), str(location_id))
+        return MC45_LOCATION_META.get(safe_id, MC45_LOCATION_META["office"])
+
+    def campaign_location_background(location_id):
+        safe_id = "minju" if str(location_id) == "residence" else str(location_id)
+        if safe_id == "classroom":
+            return campaign_classroom_background()
+        return campaign_location_meta(safe_id)[1]
 
     MC45_LOCATION_EVENTS = {
         "kongmiao": (

@@ -185,7 +185,7 @@ screen campaign_club_board():
 screen campaign_club_activity(event_data):
     modal True
     $ club_id, event_id, title, body = event_data
-    add MC45_LOCATION_META[current_location][1]:
+    add campaign_location_background(current_location):
         xysize (1920, 1080)
     frame:
         xpos 105

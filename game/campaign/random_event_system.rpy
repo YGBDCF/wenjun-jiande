@@ -30,7 +30,7 @@ init python:
             return illustration
         if event.get("location_id") == "classroom" and renpy.loadable(campaign_classroom_background()):
             return campaign_classroom_background()
-        return MC45_LOCATION_META[store.current_location][1]
+        return campaign_location_background(store.current_location)
 
     def campaign_event_weather_matches(event_weather):
         if "任意" in event_weather:

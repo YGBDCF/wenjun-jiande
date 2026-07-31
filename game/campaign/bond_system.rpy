@@ -155,7 +155,7 @@ init python:
 
 screen campaign_bond_event(event):
     modal True
-    add MC45_LOCATION_META[current_location][1]:
+    add campaign_location_background(current_location):
         xysize (1920, 1080)
     add Solid("#08090844")
     if event["person"] in BOND_PORTRAITS:

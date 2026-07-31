@@ -53,6 +53,12 @@ init python:
         assert isinstance(store.daily_action_log, list)
         assert isinstance(store.last_night_summary, list)
         assert isinstance(store.night_return_modifier, int)
+        assert callable(day1_finish_chapter)
+        assert callable(finish_chapter)
+        club_locations = set()
+        for rule in CLUB_RULES.values():
+            club_locations.update(rule["locations"])
+        assert club_locations.issubset(set(MC45_LOCATION_META.keys()))
         return True
 
     def campaign_assert_campus_stock_caps():

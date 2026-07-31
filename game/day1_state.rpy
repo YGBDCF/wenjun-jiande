@@ -38,6 +38,14 @@ init python:
                 chapter_id + 1
             )
 
+    def finish_chapter(chapter_id, archive_id=None):
+        """Compatibility wrapper for early prototype saves and scripts."""
+        day1_finish_chapter(int(chapter_id))
+        if archive_id and hasattr(store, "archive_entries"):
+            if archive_id not in store.archive_entries:
+                store.archive_entries.append(archive_id)
+        return True
+
     def day1_meicheng_unlocked(location_id):
         if location_id == "dock":
             return True
