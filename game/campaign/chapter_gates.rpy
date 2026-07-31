@@ -159,7 +159,7 @@ label campaign_complete_chapter5:
     $ in_chapter_episode = False
     $ active_meta_map = "jiande_exploration_map"
     $ campaign_sync_legacy_view()
-    call classroom_opening_sequence
+    call classroom_opening_sequence from _call_classroom_opening_sequence
     jump jiande_map_hub
 
 

@@ -509,7 +509,7 @@ label meicheng_town_hub:
             $ chapter5_completed = True
             $ classroom_unlocked = True
             $ map_visual_phase = "post_classroom"
-            call classroom_opening_sequence
+            call classroom_opening_sequence from _call_classroom_opening_sequence_1
         jump campaign_forced_exam
     if campaign_day == 7 and not chapter5_completed:
         jump day7_chapter5_gate
@@ -537,18 +537,18 @@ label meicheng_town_hub:
 
 label mc45_run_interaction:
     if mc45_selected_place == "office":
-        call campus_office_request_board
+        call campus_office_request_board from _call_campus_office_request_board
 
     $ bond_candidate = campaign_bond_candidate(mc45_selected_place)
     if bond_candidate:
-        call campaign_bond_event_label(bond_candidate)
+        call campaign_bond_event_label(bond_candidate) from _call_campaign_bond_event_label
         if _return:
             call screen mc45_result_card
             jump meicheng_town_hub
 
     $ club_candidate = campaign_club_activity_for_turn(mc45_selected_place)
     if club_candidate:
-        call campaign_club_activity_label(club_candidate)
+        call campaign_club_activity_label(club_candidate) from _call_campaign_club_activity_label_1
         if _return:
             call screen mc45_result_card
             jump meicheng_town_hub
@@ -561,7 +561,7 @@ label mc45_run_interaction:
     else:
         $ catalog_event = campaign_pick_random_event(mc45_selected_place)
         if catalog_event:
-            call campaign_random_event_label(catalog_event)
+            call campaign_random_event_label(catalog_event) from _call_campaign_random_event_label
             call screen mc45_result_card
             jump meicheng_town_hub
         $ event_title, event_text = mc45_pick_location_event(mc45_selected_place, mc45_day, mc45_event_history)
