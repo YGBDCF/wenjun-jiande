@@ -88,12 +88,23 @@ init -20 python:
     def mc45_sync_weather_ambience(weather):
         kind = mc45_weather_kind(weather)
         path = MC45_WEATHER_AUDIO.get(kind)
+        volume_by_kind = {
+            "rain": 0.18,
+            "heavy_rain": 0.46,
+            "fog": 0.10,
+            "cold": 0.16,
+        }
         current = renpy.music.get_playing(channel="weather")
         if path:
+            renpy.music.set_volume(
+                volume_by_kind.get(kind, 0.18),
+                delay=1.2,
+                channel="weather",
+            )
             if current != path:
-                renpy.music.play(path, channel="weather", loop=True, fadein=1.0)
+                renpy.music.play(path, channel="weather", loop=True, fadein=2.0)
         elif current:
-            renpy.music.stop(channel="weather", fadeout=1.0)
+            renpy.music.stop(channel="weather", fadeout=2.0)
 
 
 transform mc45_rain_streak(x_value=0, delay_value=0.0, travel_time=1.0):
@@ -106,12 +117,12 @@ transform mc45_rain_streak(x_value=0, delay_value=0.0, travel_time=1.0):
     repeat
 
 
-transform mc45_fog_drift(start_x=-500, travel_time=18.0):
+transform mc45_fog_drift(start_x=-850, end_x=1550, travel_time=42.0, peak_alpha=0.42):
     xpos start_x
     alpha 0.0
-    linear 2.0 alpha 0.16
-    linear travel_time xpos 1920
-    alpha 0.0
+    easein 4.0 alpha peak_alpha
+    linear travel_time xpos end_x
+    easeout 4.0 alpha 0.0
     repeat
 
 
@@ -129,11 +140,15 @@ screen mc45_weather_overlay(weather):
             add Solid(rain_alpha, xysize=(2, 88 if weather_kind == "rain" else 116)) at mc45_rain_streak(rain_x, rain_delay, rain_speed)
 
     elif weather_kind == "fog":
-        add Solid("#d9ddd4", xysize=(760, 185)) at mc45_fog_drift(-700, 22.0):
-            ypos 180
-        add Solid("#e2e4dc", xysize=(920, 230)) at mc45_fog_drift(-1100, 29.0):
-            ypos 515
+        # Transparent, soft-edged mist wisps. The painted fog map supplies
+        # the atmospheric base; these layers add only restrained motion.
+        add "assets/weather/fog_wisp_wide.svg" at mc45_fog_drift(-1000, 1500, 46.0, 0.32):
+            ypos 145
+            zoom 1.10
+        add "assets/weather/fog_wisp_wide.svg" at mc45_fog_drift(-1450, 1320, 58.0, 0.22):
+            ypos 500
+            zoom 1.35
+            xzoom -1.0
 
     elif weather_kind == "cold":
         add Solid("#d7e0e712")
-

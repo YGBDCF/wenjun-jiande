@@ -13,6 +13,14 @@ default ending_title = ""
 default finale_gallery_index = 0
 default finale_route_step = 0
 
+
+# 竖幅预告图以等比“铺满”方式用于横屏，不拉伸人物。
+transform finale_poster_landscape:
+    xysize (1920, 1080)
+    fit "cover"
+    xalign 0.5
+    yalign 0.82
+
 init python:
     def finale_number(name, default=0):
         try:
@@ -189,6 +197,14 @@ screen finale_roll_call_continue():
 
 screen finale_route_progress(step):
     zorder 20
+    text "浙大西迁：文军长征":
+        xpos 72
+        ypos 54
+        font CHAPTER_XINGKAI_FONT
+        size 58
+        color "#4e3d21"
+        outlines [(2, "#ead9aa99", 0, 0)]
+
     $ nodes = [
         ("建德", 1510, 340),
         ("金华", 1190, 440),
@@ -239,11 +255,16 @@ screen finale_statistics_page(profile, page):
                 text "人望 [profile['reputation']]　心志 [profile['will']]　求实 [profile['truth']]" size 25 color "#e5dfcf"
                 text "校园秩序 [profile['campus_order']]" size 25 color "#f0d98d"
             elif page == 3:
+                $ finale_relationships = profile.get("relationships", {})
+                $ finale_clubs = profile.get("clubs", {})
                 text "三　人物与社团" size 29 color "#cbb987"
-                text "许南枝关系：[profile['relationships'].get('xu_nanzhi', 0)]" size 24 color "#e5dfcf"
-                text "顾明川关系：[profile['relationships'].get('gu_mingchuan', 0)]" size 24 color "#e5dfcf"
-                text "周顺安关系：[profile['relationships'].get('zhou_shunan', 0)]" size 24 color "#e5dfcf"
-                text "四社团进度：[profile['clubs']]" size 22 color "#d4cdbd" xmaximum 900
+                text "许南枝关系：[finale_relationships.get('xu_nanzhi', 0)]" size 24 color "#e5dfcf"
+                text "顾明川关系：[finale_relationships.get('gu_mingchuan', 0)]" size 24 color "#e5dfcf"
+                text "周顺安关系：[finale_relationships.get('zhou_shunan', 0)]" size 24 color "#e5dfcf"
+                null height 8
+                text "四社团进度" size 25 color "#cbb987"
+                text "学术研讨　[finale_clubs.get('academic', 0)]　　勤工互助　[finale_clubs.get('work_study', 0)]" size 22 color "#d4cdbd"
+                text "修缮实务　[finale_clubs.get('repair', 0)]　　校报编辑　[finale_clubs.get('news', 0)]" size 22 color "#d4cdbd"
                 text "报纸可信度：[profile['newspaper_credibility']]" size 24 color "#f0d98d"
             elif page == 4:
                 text "四　档案" size 29 color "#cbb987"
@@ -664,7 +685,7 @@ label finale_jian_taihe_teaser:
     "蓝布笔记本自动翻开新的一页。页面上写着：吉安—泰和。下一行仍然空白。"
     "沈砚舟" "建德篇写完了。下一页，从一条更远的江开始。"
 
-    scene expression "images/finale/teaser/poster_jian_taihe.webp"
+    scene expression "images/finale/teaser/poster_jian_taihe.webp" at finale_poster_landscape
     with fade
     centered "{size=64}{color=#f0ddb0}负笈西行 · 吉安—泰和篇{/color}{/size}\n\n{size=31}{color=#e3d8c1}新校舍、新课程，仍从一张空白名单开始。{/color}{/size}"
     $ renpy.pause(6.0, hard=True)
@@ -708,7 +729,7 @@ label finale_menu:
     elif finale_choice == "gallery":
         jump finale_gallery
     elif finale_choice == "poster":
-        scene expression "images/finale/teaser/poster_jian_taihe.webp"
+        scene expression "images/finale/teaser/poster_jian_taihe.webp" at finale_poster_landscape
         with fade
         centered "{size=64}{color=#f0ddb0}负笈西行 · 吉安—泰和篇{/color}{/size}"
         pause
